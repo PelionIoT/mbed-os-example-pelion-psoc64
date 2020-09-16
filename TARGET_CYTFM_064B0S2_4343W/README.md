@@ -1,3 +1,6 @@
+![cypress-pioneer-kit](../img/cypress-pioneer-kit.png "Cypress Pioneer Kit")
+
+
 # Running Device Management Client example on the PSoC® 64 Secure Boot Wi-Fi BT Pioneer Kit (CYTFM_064B0S2_4343W)
 
 This document guides you through all of the steps required to run Device Management Client example on the CYTFM_064B0S2_4343W target.
@@ -11,37 +14,26 @@ This document guides you through all of the steps required to run Device Managem
 
 ## Prerequisites
 
-- [Python 3.7](https://www.python.org/downloads/release/python-378).
-- Run `pip install mbed-cli cysecuretools pyopenssl` to install:
-    - Mbed CLI 1.10.0 or higher
-    - cysecuretools (you need 2.0.0 or higher)
-    - pyopenssl
+- [Arm Mbed Studio](https://os.mbed.com/studio/)
 - Install the `libusb` dependency for pyOCD based on the [Cypress documentation](https://www.cypress.com/file/502721/download#page=19&zoom=100,96,382).
 
     **Note:** Due to a known issue, Cypress recommends using [`libusb` version 1.0.21](https://github.com/libusb/libusb/releases/tag/v1.0.21) on Windows instead of the most recent version.
+- OpenSSL toolkit (only if you do not have your own root CA private key and certificate and need to generate them yourself)
+     - For Windows the [SLP distribution](https://slproweb.com/products/Win32OpenSSL.html) will suffice and the PATH env should be updated to point to the installation.)
 
-- [OpenSSL](https://www.openssl.org/source/gitrepo.html) (only if you do not have your own root CA private key and certificate and need to generate them yourself).
 
-## Deploying the example
+## Importing the example in Mbed Studio
 
-1. Import the `mbed-os-example-pelion` repository:
+1. [Import](https://os.mbed.com/docs/mbed-studio/current/create-import/index.html) the code repository to Mbed Studio:
+
+![mbed-studio-import](../img/mbed-studio-import.png "Cypress Pioneer Kit")
+
+## Install Cypress Tools
+Open a terminal inside Mbed Studio and install Cypress SecureTools:
 
     ```
-    mbed import https://github.com/ARMmbed/mbed-os-example-pelion
+    pip install cysecuretools
     ```
-
-1. Check out the `cytfm-064b0s2-4343w` branch:
-
-    ```
-    cd mbed-os-example-pelion
-    git checkout cytfm-064b0s2-4343w
-    ```
-
-1. Deploy dependencies:  
-
-   ```
-   mbed deploy
-   ```
 
 ## Provisioning the device with initial credentials
 
@@ -82,7 +74,7 @@ For more information about the initial provisioning process, please see ["Provis
 
     ```
     mkdir certificates
-    ```  
+    ```
 
 1. Name your own root CA private key and certificate `rootCA.key` and `rootCA.pem` respectively, and place them in the `TARGET_CYTFM_064B0S2_4343W/certificates` directory.
 
