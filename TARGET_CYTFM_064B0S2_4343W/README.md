@@ -29,7 +29,7 @@ This document guides you through all of the steps required to run Device Managem
 ![mbed-studio-import](../img/mbed-studio-import.png "Cypress Pioneer Kit")
 
 ## Install Cypress Tools
-Open a terminal inside Mbed Studio and install Cypress SecureTools:
+Open a terminal inside Mbed Studio (Terminal... New Terminal) and install CySecureTools:
 
     ```
     pip install cysecuretools
@@ -39,7 +39,7 @@ Open a terminal inside Mbed Studio and install Cypress SecureTools:
 
 You need to carry out this step only once on each board to be able to re-provision later with your root CA and device certificate.
 
-1. Set up your project workspace for CySecureTools and create keys for provisioning:
+1. In the Mbed Studio terminal, set up your project workspace for CySecureTools and create keys for provisioning:
 
     ```
     cd ./mbed-os/targets/TARGET_Cypress/TARGET_PSOC6/TARGET_CYTFM_064B0S2_4343W
@@ -62,7 +62,7 @@ You need to carry out this step only once on each board to be able to re-provisi
 1. Put back the jumper shunt back in J26.
 1. Plug in power.
 
-    **Note:** You don't need the keys and other files that are created in this flow in the future. At this point, you can delete these files.
+    **Note:** You don't need the keys and other files that were just created. At this point, you can delete these files.
 
 For more information about the initial provisioning process, please see ["Provision the Device" section of the CY8CKIT-064B0S2-4343W PSoC 64 Secure Boot Wi-Fi BT Pioneer Kit Guide](https://www.cypress.com/file/502721/download#page=30&zoom=100,96,382).
 
@@ -82,7 +82,13 @@ For more information about the initial provisioning process, please see ["Provis
 
     ```
     openssl ecparam -out certificates/rootCA.key -name prime256v1 -genkey
+    ```
+
+    ```
     (echo '[ req ]'; echo 'distinguished_name=dn'; echo 'prompt = no'; echo '[ ext ]'; echo "basicConstraints = CA:TRUE"; echo "keyUsage = digitalSignature, keyCertSign, cRLSign"; echo '[ dn ]'; echo 'CN = ROOT_CA') > certificates/root.cnf
+    ```
+
+    ```
     openssl req -key certificates/rootCA.key -new -x509 -days 7300 -sha256 -out certificates/rootCA.pem -config certificates/root.cnf -extensions ext
     ```
 
@@ -105,29 +111,30 @@ For more information about the initial provisioning process, please see ["Provis
     python ../mbed-os/targets/TARGET_Cypress/TARGET_PSOC6/TARGET_CYTFM_064B0S2_4343W/reprov_helper.py -d cy8ckit-064b0s2-4343w -p policy/cytfm_pelion_policy.json -existing-keys --serial <device's unique serial number> -y
     cd ../
     ```
+    Give your device any serial number that you like.
 
 ## Building and running the example
 
 1. Navigate to your `mbed-os-example-pelion` root folder.
 
 1. In Windows only, rename `.mbedignore-for-win` to `.mbedignore`:
-
-    ```
-    rename .mbedignore-for-win .mbedignore
-    ```
-
-    Due to [mbed-os issue 7129](https://github.com/ARMmbed/mbed-os/issues/7129), the include path might exceed the maximum Windows command line string length. Using `.mbedignore` decreases the length of the include path but makes these features unavailable:
-    * Certificate Enrollment
-    * Device Sentry
-    * Secure Device Access
-    * Factory flow using FCU
-
 1. In Windows, Mac and other case-insensitive file systems, apply a patch that resolves an issue with conflicting file names by running:
 
     ```
     cd mbed-cloud-client
     git am ..\mcc-fix-conflict-fname.patch
     cd ..
+    ```
+
+1. Add your WiFi access point information:
+
+    1. Open the file `mbed_app.json`.
+
+    1. Edit the lines to update the default WiFi SSID & password:
+
+    ```
+    "nsapi.default-wifi-ssid"                   : "\"SSID\"",
+    "nsapi.default-wifi-password"               : "\"PASSWORD\"",
     ```
 
 1. To enable firmware update:
@@ -139,23 +146,100 @@ For more information about the initial provisioning process, please see ["Provis
         ```
         The Cypress update flow requires the newest version of the manifest-tool.
 
-    1. Initialize the environment:
+    1. From the top level of the project, initialize the environment:
 
         ```
         manifest-dev-tool init --force -a [access key from Device Management Portal]
         ```
         For information about access keys, please see [Application access keys](https://www.pelion.com/docs/device-management/latest/user-account/application-access-keys.html).
 
+1. Configure the target:
+
+    Mbed OS supports two target configurations for this board. The default is `CY8CKIT_064B0S2_4343W`. For this tutorial, we will use `CYTFM_064B0S2_4343W` which enables support for Trusted Firmwware-M (TF-M) secure services.
+
+    1. In Mbed Studio, next to the Target box, select the down arrow. Then click the chip icon, to open the 'Manage Custom Targets' menu.
+
+    ![manage custom target](../img/manage-custom-target.png "Manage Custom Target")
+
+    1. Next, under `USB device`, select the connected board, and type `CYTFM_064B0S2_4343W` for both the `Target Name` and `Build target`
+
+    ![set custom target](../img/set-target.png "Set Custom Target")
+
 1. Build the example:
 
+    Press the hammer icon to build the application.
+
+    ![build program](../img/hammer.png "Build Program")
+
+    Upon success, the output should something like:
+
     ```
-    mbed compile -m CYTFM_064B0S2_4343W -t GCC_ARM
+    020-09-16 15:41:57,783 : C : INFO  : Image for slot BOOT signed successfully! (BUILD/CYTFM_064B0S2_4343W/ARMC6\tfm_s.hex)
+    2020-09-16 15:41:58,168 : C : INFO  : Image for slot UPGRADE signed successfully! (BUILD/CYTFM_064B0S2_4343W/ARMC6\tfm_s_upgrade.hex)
+    2020-09-16 15:42:00,372 : C : INFO  : Image for slot BOOT signed successfully! (BUILD/CYTFM_064B0S2_4343W/ARMC6\mbed-os-example-pelion-armdevsummit.hex)
+    2020-09-16 15:42:01,813 : C : INFO  : Image for slot UPGRADE signed successfully! (BUILD/CYTFM_064B0S2_4343W/ARMC6\mbed-os-example-pelion-armdevsummit_upgrade.hex)
+    | Module                                        |      .text |    .data |       .bss |
+    |-----------------------------------------------|------------|----------|------------|
+    | TARGET_CYTFM_064B0S2_4343W\cy_factory_flow.o  |   2113(+0) |    0(+0) |   2000(+0) |
+    | [lib]\c_w.l                                   |  13006(+0) |   16(+0) |    392(+0) |
+    | [lib]\fz_wm.l                                 |   1888(+0) |    0(+0) |      0(+0) |
+    | [lib]\libcpp_w.l                              |      5(+0) |    0(+0) |      0(+0) |
+    | [lib]\libcppabi_w.l                           |     44(+0) |    0(+0) |      0(+0) |
+    | [lib]\m_wm.l                                  |    754(+0) |    0(+0) |      0(+0) |
+    | anon$$obj.o                                   |     48(+0) |    0(+0) |   5120(+0) |
+    | main.o                                        |   3059(+0) |    0(+0) |    369(+0) |
+    | mbed-cloud-client\device-sentry-client        |    166(+0) |    0(+0) |      0(+0) |
+    | mbed-cloud-client\factory-configurator-client |  11190(+0) |    2(+0) |     83(+0) |
+    | mbed-cloud-client\mbed-client                 |  67037(+0) |   22(+0) |     12(+0) |
+    | mbed-cloud-client\mbed-client-pal             |  14254(+0) |    1(+0) |     79(+0) |
+    | mbed-cloud-client\source                      |  10166(+0) |    5(+0) |     24(+0) |
+    | mbed-cloud-client\update-client-hub           |  28753(+0) |  146(+0) |   5178(+0) |
+    | mbed-os\connectivity                          | 165477(+0) |  200(+0) | 105681(+0) |
+    | mbed-os\drivers                               |   6614(+0) |    0(+0) |     84(+0) |
+    | mbed-os\events                                |   2138(+0) |    0(+0) |   4672(+0) |
+    | mbed-os\features                              |   6470(+0) |    1(+0) |    228(+0) |
+    | mbed-os\hal                                   |   3580(+0) |    8(+0) |    248(+0) |
+    | mbed-os\platform                              |  10393(+0) |   80(+0) |   1420(+0) |
+    | mbed-os\rtos                                  |  16028(+0) |  168(+0) |   7897(+0) |
+    | mbed-os\storage                               |   5873(+0) |    0(+0) |    548(+0) |
+    | mbed-os\targets                               | 508073(+0) |  533(+0) |   3817(+0) |
+    | update_default_resources.o                    |    432(+0) |    0(+0) |      0(+0) |
+    | Subtotals                                     | 877561(+0) | 1182(+0) | 137852(+0) |
+    Total Static RAM memory (data + bss): 139034(+0) bytes
+    Total Flash memory (text + data): 878743(+0) bytes
+    Update Image: BUILD/CYTFM_064B0S2_4343W/ARMC6\mbed-os-example-pelion-armdevsummit_update.bin
+    Image: BUILD/CYTFM_064B0S2_4343W/ARMC6\mbed-os-example-pelion-armdevsummit.hex
     ```
+
+  **Notes:**
+  1. Depending on your system, building can take 2 minutes (best case) to 20 minutes (worst case).
+
+  1. The following error can be ignored.
+
+      ```
+      Configuration error: Bootloader not supported on this target. RAM start not found in targets.json.
+      ```
 
 1. Flash and run the application:
 
-    1. Drag and drop the hex output file (`BUILD/CYTFM_064B0S2_4343W/GCC_ARM/mbed-os-example-pelion.hex`) to the mounted drive for the board.
+    Press the run icon to download and run the application.
+
+    ![run program](../img/run.png "Run Program")
+
+    Alternatively, you can flash the application directly:
+    1. Drag and drop the hex output file (`BUILD/CYTFM_064B0S2_4343W/ARMC6/mbed-os-example-pelion-armdevsummit.hex`) to the mounted drive for the board.
     1. Reset the board.
+
+1. Open the Serial Monitor and choose baud rate `115200`.
+
+
+1. Enroll the device to your Pelion account:
+
+    The first time the application successfully boots up and connects to the network, it will print it's enrollment ID on the Serial Monitor.
+
+    ![enrollment](../img/enrollment.png "Enrollment ID")
+
+
     1. Copy the enrollment ID from the terminal output.
     1. Upload the enrollment ID to Device Management:
         1. In Device Management Portal, click **Device directory** > **Enrolling devices**.
@@ -185,10 +269,11 @@ We currently support updating the example application in the CM4 core.
 
 1. Build the upgraded signed image:
 
-    ```
-    mbed compile -m CYTFM_064B0S2_4343W -t GCC_ARM
-    ```
-    This creates a `./BUILD/CYTFM_064B0S2_4343W/GCC_ARM/mbed-os-example-pelion_upgrade.hex` file.
+    Press the hammer icon to build the application.
+
+    ![build program](../img/hammer.png "Build Program")
+
+    This creates a `./BUILD/CYTFM_064B0S2_4343W/GCC_ARM/mbed-os-example-pelion-armdevsummit_upgrade.hex` file.
 
     The manifest tool does not currently support hex files; therefore, you must convert the image to bin format.
 
