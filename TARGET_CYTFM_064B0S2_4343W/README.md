@@ -31,9 +31,9 @@ This document guides you through all of the steps required to run Device Managem
 ## Install Cypress Tools
 Open a terminal inside Mbed Studio (Terminal... New Terminal) and install CySecureTools:
 
-    ```
-    pip install cysecuretools
-    ```
+```
+pip install cysecuretools
+```
 
 ## Provisioning the device with initial credentials
 
@@ -43,7 +43,13 @@ You need to carry out this step only once on each board to be able to re-provisi
 
     ```
     cd ./mbed-os/targets/TARGET_Cypress/TARGET_PSOC6/TARGET_CYTFM_064B0S2_4343W
+    ```
+    
+    ```
     cysecuretools -t cy8ckit-064b0s2-4343w init
+    ```
+    
+    ```
     cysecuretools -t cy8ckit-064b0s2-4343w -p policy/policy_multi_CM0_CM4_tfm.json create-keys
     ```
 
@@ -58,6 +64,9 @@ You need to carry out this step only once on each board to be able to re-provisi
     ```
     cysecuretools -t cy8ckit-064b0s2-4343w -p policy/policy_multi_CM0_CM4_tfm.json provision-device
     ```
+
+    ![provisioning](../img/provisioning.gif "Provisioning")
+
 1. Unplug your device from the power supply.
 1. Put back the jumper shunt back in J26.
 1. Plug in power.
@@ -96,6 +105,8 @@ For more information about the initial provisioning process, please see ["Provis
 
     **Important:** When you upload your root CA certificate to Device Management Portal, you must select **Enrollment - I received this certificate from the device manufacturer or a supplier** from the **How will devices use this certificate?** dropdown.
 
+    ![certificate-upload](../img/certificate.gif "Certificate Upload")
+
 1. Set up your project workspace for CySecureTools and create keys based on the `cytfm_pelion_policy.json` policy:
 
     ```
@@ -112,6 +123,8 @@ For more information about the initial provisioning process, please see ["Provis
     cd ../
     ```
     Give your device any serial number that you like.
+
+    ![provision-step2](../img/provisioning-step2.gif "Provision")
 
 ## Building and running the example
 
@@ -162,7 +175,9 @@ For more information about the initial provisioning process, please see ["Provis
         ```
         manifest-dev-tool init --force -a [access key from Device Management Portal]
         ```
-        For information about access keys, please see [Application access keys](https://www.pelion.com/docs/device-management/latest/user-account/application-access-keys.html).
+        For information about access keys and how you can create one, please refer to our [documentation](https://www.pelion.com/docs/device-management/latest/user-account/application-access-keys.html).
+
+        ![access-keys](../img/access-key.gif "Access Keys")
 
 1. Configure the target:
 
@@ -170,17 +185,17 @@ For more information about the initial provisioning process, please see ["Provis
 
     1. In Mbed Studio, next to the Target box, select the down arrow. Then click the chip icon, to open the 'Manage Custom Targets' menu.
 
-    ![manage custom target](../img/manage-custom-target.png "Manage Custom Target")
-
     1. Next, under `USB device`, select the connected board, and type `CYTFM_064B0S2_4343W` for both the `Target Name` and `Build target`
 
-    ![set custom target](../img/set-target.png "Set Custom Target")
+    ![select target](../img/target-selection.gif "Select Target")
 
 1. Build the example:
 
     Press the hammer icon to build the application.
 
     ![build program](../img/hammer.png "Build Program")
+
+    ![compile](../img/compile.gif "Compile")
 
     Upon success, the output should something like:
 
@@ -248,8 +263,7 @@ For more information about the initial provisioning process, please see ["Provis
 
     The first time the application successfully boots up and connects to the network, it will print it's enrollment ID on the Serial Monitor.
 
-    ![enrollment](../img/enrollment.png "Enrollment ID")
-
+    ![enrollment](../img/enrollment.png "Enrollment ID") 
 
     1. Copy the enrollment ID from the terminal output.
     1. Upload the enrollment ID to Device Management:
@@ -258,7 +272,9 @@ For more information about the initial provisioning process, please see ["Provis
         1. Click **Add single device**.
     1. Go back to the terminal, press **C** to continue, and check that the device connects to Device Management.
 
-**Note:** For development purposes, you can reset the Device Management credentials by running `pyocd erase -s 0x101C0000-0x101C9000`.
+    ![enrollment](../img/enroll.gif "Enrollment ID")
+
+> **Note:** For development purposes, you can reset the Device Management credentials by running `pyocd erase -s 0x101C0000-0x101C9000`.
 
 ## Updating firmware
 
@@ -311,3 +327,5 @@ We currently support updating the example application in the CM4 core.
     ```
     Current FW image version: <new firmware version>
     ```
+
+    ![update program](../img/update.gif "Update Program")
