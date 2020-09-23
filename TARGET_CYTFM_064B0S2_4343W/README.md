@@ -18,8 +18,8 @@ This document guides you through all of the steps required to run Device Managem
 - Install the `libusb` dependency for pyOCD based on the [Cypress documentation](https://www.cypress.com/file/502721/download#page=19&zoom=100,96,382).
 
     **Note:** Due to a known issue, Cypress recommends using [`libusb` version 1.0.21](https://github.com/libusb/libusb/releases/tag/v1.0.21) on Windows instead of the most recent version.
-- OpenSSL toolkit (only if you do not have your own root CA private key and certificate and need to generate them yourself)
-     - For Windows the [SLP distribution](https://slproweb.com/products/Win32OpenSSL.html) will suffice and the PATH env should be updated to point to the installation.)
+- OpenSSL toolkit (only if you do not have your own root CA private key and certificate and need to generate them yourself).
+     - For Windows the [SLP distribution](https://slproweb.com/products/Win32OpenSSL.html) will suffice and the PATH env should be updated to point to the installation.
 
 
 ## Importing the example in Mbed Studio
@@ -62,13 +62,13 @@ You need to carry out this step only once on each board to be able to re-provisi
 1. Put back the jumper shunt back in J26.
 1. Plug in power.
 
-    **Note:** You don't need the keys and other files that were just created. At this point, you can delete these files.
+    **Note:** You don't need the keys and other files that are created in this flow in the future. At this point, you can delete these files.
 
 For more information about the initial provisioning process, please see ["Provision the Device" section of the CY8CKIT-064B0S2-4343W PSoC 64 Secure Boot Wi-Fi BT Pioneer Kit Guide](https://www.cypress.com/file/502721/download#page=30&zoom=100,96,382).
 
 ## Generating and provisioning Device Management credentials
 
-1. Navigate to the `mbed-os-example-pelion/TARGET_CYTFM_064B0S2_4343W` directory.
+1. Navigate to the `mbed-os-example-pelion-armdevsummit/TARGET_CYTFM_064B0S2_4343W` directory.
 
 1. Create a `certificates` directory:
 
@@ -115,9 +115,20 @@ For more information about the initial provisioning process, please see ["Provis
 
 ## Building and running the example
 
-1. Navigate to your `mbed-os-example-pelion` root folder.
+1. Navigate to your `mbed-os-example-pelion-armdevsummit` root folder.
 
 1. In Windows only, rename `.mbedignore-for-win` to `.mbedignore`:
+
+    ```
+    rename .mbedignore-for-win .mbedignore
+    ```
+
+    Due to [mbed-os issue 7129](https://github.com/ARMmbed/mbed-os/issues/7129), the include path might exceed the maximum Windows command line string length. Using `.mbedignore` decreases the length of the include path but makes these features unavailable:
+    * Certificate Enrollment
+    * Device Sentry
+    * Secure Device Access
+    * Factory flow using FCU
+
 1. In Windows, Mac and other case-insensitive file systems, apply a patch that resolves an issue with conflicting file names by running:
 
     ```
@@ -146,7 +157,7 @@ For more information about the initial provisioning process, please see ["Provis
         ```
         The Cypress update flow requires the newest version of the manifest-tool.
 
-    1. From the top level of the project, initialize the environment:
+    1. Initialize the environment:
 
         ```
         manifest-dev-tool init --force -a [access key from Device Management Portal]
@@ -273,21 +284,21 @@ We currently support updating the example application in the CM4 core.
 
     ![build program](../img/hammer.png "Build Program")
 
-    This creates a `./BUILD/CYTFM_064B0S2_4343W/GCC_ARM/mbed-os-example-pelion-armdevsummit_upgrade.hex` file.
+    This creates a `./BUILD/CYTFM_064B0S2_4343W/ARMC6/mbed-os-example-pelion-armdevsummit_upgrade.hex` file.
 
     The manifest tool does not currently support hex files; therefore, you must convert the image to bin format.
 
 1. To convert the upgrade image from hex to bin format:
 
     ```
-    python inthex2bin.py BUILD/CYTFM_064B0S2_4343W/GCC_ARM/mbed-os-example-pelion_upgrade.hex
+    python inthex2bin.py BUILD/CYTFM_064B0S2_4343W/ARMC6/mbed-os-example-pelion-armdevsummit_upgrade.hex
     ```
-    This creates the `./BUILD/CYTFM_064B0S2_4343W/GCC_ARM/mbed-os-example-pelion_upgrade.bin` file.
+    This creates the `./BUILD/CYTFM_064B0S2_4343W/ARMC6/mbed-os-example-pelion-armdevsummit_upgrade.bin` file.
 
 1. Perform the update:
 
     ```
-    manifest-dev-tool update-v1 --payload-path BUILD/CYTFM_064B0S2_4343W/GCC_ARM/mbed-os-example-pelion_upgrade.bin --fw-version <new firmware version> --device-id <device ID> --start-campaign --wait-for-completion --timeout 3600
+    manifest-dev-tool update-v1 --payload-path BUILD/CYTFM_064B0S2_4343W/ARMC6/mbed-os-example-pelion-armdevsummit_upgrade.bin --fw-version <new firmware version> --device-id <device ID> --start-campaign --wait-for-completion --timeout 3600
     ```
 
     Where:
