@@ -5,9 +5,10 @@
 
 This document guides you through all of the steps required to run Device Management Client example on the CYTFM_064B0S2_4343W target.
 
-- [Prerequisites](#prerequisites).
-- [Deploying the example](#deploying-the-example).
-- [Provisioning the device with initial credentials](#provisioning-the-device-with-initial-credentials).
+- [Prerequisites](#prerequisites)
+- [Importing the example in Mbed Studio](#importing-the-example-in-mbed-studio)
+- [Install Cypress Tools](#install-cypress-tools).
+- [Provisioning the device with initial credentials](#provisioning-the-device-with-initial-credentials)
 - [Generating and provisioning Device Management credentials](#generating-and-provisioning-device-management-credentials).
 - [Building and running the example](#building-and-running-the-example).
 - [Updating firmware](#updating-firmware).
