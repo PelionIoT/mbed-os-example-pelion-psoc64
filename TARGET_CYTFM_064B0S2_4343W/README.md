@@ -359,4 +359,4 @@ We currently support updating the example application in the CM4 core.
 
     You can check the status of the update campaign created by the manifest-tool by selecting it in the portal and opening its details pane. It should be marked as successful: 
 
-    ![build program](../img/update-campaigns.png "Build Program")
+    ![view-update-campaign-details](../img/update-campaigns.png "View Update Campaign Details")
