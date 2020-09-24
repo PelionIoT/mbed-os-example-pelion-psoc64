@@ -15,7 +15,7 @@ This document guides you through all of the steps required to run Device Managem
 
 ## Prerequisites
 
-- [Arm Mbed Studio](https://os.mbed.com/studio/)
+- [Arm Mbed Studio](https://os.mbed.com/studio/) used for building and flashing the application.
 - Install the `libusb` dependency for pyOCD based on the [Cypress documentation](https://www.cypress.com/file/502721/download#page=19&zoom=100,96,382).
 
     **Note:** Due to a known issue, Cypress recommends using [`libusb` version 1.0.21](https://github.com/libusb/libusb/releases/tag/v1.0.21) on Windows instead of the most recent version.
@@ -30,7 +30,7 @@ This document guides you through all of the steps required to run Device Managem
 ![mbed-studio-import](../img/mbed-studio-import.png "Cypress Pioneer Kit")
 
 ## Install Cypress Tools
-Open a terminal inside Mbed Studio (Terminal... New Terminal) and install CySecureTools:
+Open a terminal inside Mbed Studio (Menu _Terminal->New Terminal_) and install CySecureTools:
 
 ```
 pip install cysecuretools
@@ -58,7 +58,7 @@ You need to carry out this step only once on each board to be able to re-provisi
 
 1. Unplug your device from the power supply.
 1. Remove the jumper shunt from J26.
-1. Plug in power.
+1. Plug-in power.
 1. Press the Mode button until the LED is always on to put the device in DAPLink mode.
 1. To provision the board with basic configuration, run:
 
@@ -69,8 +69,8 @@ You need to carry out this step only once on each board to be able to re-provisi
     ![provisioning](../img/provisioning.gif "Provisioning")
 
 1. Unplug your device from the power supply.
-1. Put back the jumper shunt back in J26.
-1. Plug in power.
+1. Put back the jumper shunt in J26.
+1. Plug-in power.
 
     **Note:** You don't need the keys and other files that are created in this flow in the future. At this point, you can delete these files.
 
@@ -78,7 +78,11 @@ For more information about the initial provisioning process, please see ["Provis
 
 ## Generating and provisioning Device Management credentials
 
-1. Navigate to the `mbed-os-example-pelion-armdevsummit/TARGET_CYTFM_064B0S2_4343W` directory.
+1. Navigate to the root of the project and enter the `TARGET_CYTFM_064B0S2_4343W` directory:
+
+    ```
+    cd mbed-os-example-pelion-armdevsummit/TARGET_CYTFM_064B0S2_4343W
+    ```
 
 1. Create a `certificates` directory:
 
@@ -86,7 +90,7 @@ For more information about the initial provisioning process, please see ["Provis
     mkdir certificates
     ```
 
-1. Name your own root CA private key and certificate `rootCA.key` and `rootCA.pem` respectively, and place them in the `TARGET_CYTFM_064B0S2_4343W/certificates` directory.
+1. Name your own root CA private key and certificate `rootCA.key` and `rootCA.pem` respectively, and place them in the `certificates/` directory.
 
     Alternatively, if you don't have a root CA, you can generate a root CA private key and certificate using the [OpenSSL toolkit](https://www.openssl.org/):
 
@@ -94,34 +98,43 @@ For more information about the initial provisioning process, please see ["Provis
     openssl ecparam -out certificates/rootCA.key -name prime256v1 -genkey
     ```
 
+    Create a new configuration file with a name `root.cnf` and place it in the `certificates/` directory. The file is passed as input to the `openssl` tool in the next step, to create the final certificate.
+    The contents of the file should be the following:
+    
     ```
-    (echo '[ req ]'; echo 'distinguished_name=dn'; echo 'prompt = no'; echo '[ ext ]'; echo "basicConstraints = CA:TRUE"; echo "keyUsage = digitalSignature, keyCertSign, cRLSign"; echo '[ dn ]'; echo 'CN = ROOT_CA') > certificates/root.cnf
+    [ req ]
+    distinguished_name=dn
+    prompt = no
+    [ ext ]
+    basicConstraints = CA:TRUE
+    keyUsage = digitalSignature, keyCertSign, cRLSign
+    [ dn ]
+    CN = ROOT_CA
     ```
 
+    Finally, create the certificate:
     ```
     openssl req -key certificates/rootCA.key -new -x509 -days 7300 -sha256 -out certificates/rootCA.pem -config certificates/root.cnf -extensions ext
     ```
 
-1. [Upload the root CA certificate to the portal](https://www.pelion.com/docs/device-management/latest/provisioning-process/managing-ca-certificates.html#uploading-a-ca-certificate-or-certificate-chain).
+1. Upload the root CA certificate generated from the previous step to the portal. Refer to the [Pelion Documentation](https://www.pelion.com/docs/device-management/latest/provisioning-process/managing-ca-certificates.html#uploading-a-ca-certificate-or-certificate-chain) for instructions on how to accomplish this.
 
     **Important:** When you upload your root CA certificate to Device Management Portal, you must select **Enrollment - I received this certificate from the device manufacturer or a supplier** from the **How will devices use this certificate?** dropdown.
 
     ![certificate-upload](../img/certificate.gif "Certificate Upload")
 
-1. Set up your project workspace for CySecureTools and create keys based on the `cytfm_pelion_policy.json` policy:
+1. Set up your project workspace for CySecureTools and create keys based on the [`cytfm_pelion_policy.json`](https://github.com/cvasilak/mbed-os-example-pelion-armdevsummit/blob/armdevsummit/TARGET_CYTFM_064B0S2_4343W/policy/cytfm_pelion_policy.json) policy:
 
     ```
-    cd ./TARGET_CYTFM_064B0S2_4343W
     cysecuretools -t cy8ckit-064b0s2-4343w init
     cysecuretools -t cy8ckit-064b0s2-4343w -p policy/cytfm_pelion_policy.json create-keys
     ```
 
-    **Note:** You use these keys to sign future application images and the device uses the keys to verify the application images. Therefore, if you lose the keys, you need to re-provision the board with new keys.
+    > **Note:** You use these keys to sign future application images and the device uses the keys to verify the application images. Therefore, if you lose the keys, you need to re-provision the board with new keys.
 
 1. Provision the device with your root CA, app keys and device certificate:
     ```
     python ../mbed-os/targets/TARGET_Cypress/TARGET_PSOC6/TARGET_CYTFM_064B0S2_4343W/reprov_helper.py -d cy8ckit-064b0s2-4343w -p policy/cytfm_pelion_policy.json -existing-keys --serial <device's unique serial number> -y
-    cd ../
     ```
     Give your device any serial number that you like.
 
@@ -129,7 +142,11 @@ For more information about the initial provisioning process, please see ["Provis
 
 ## Building and running the example
 
-1. Navigate to your `mbed-os-example-pelion-armdevsummit` root folder.
+1. Navigate back to the root of the project:
+
+    ```
+    cd ..
+    ```
 
 1. In Windows only, rename `.mbedignore-for-win` to `.mbedignore`:
 
@@ -137,11 +154,11 @@ For more information about the initial provisioning process, please see ["Provis
     rename .mbedignore-for-win .mbedignore
     ```
 
-    Due to [mbed-os issue 7129](https://github.com/ARMmbed/mbed-os/issues/7129), the include path might exceed the maximum Windows command line string length. Using `.mbedignore` decreases the length of the include path but makes these features unavailable:
-    * Certificate Enrollment
-    * Device Sentry
-    * Secure Device Access
-    * Factory flow using FCU
+    > Due to [mbed-os issue 7129](https://github.com/ARMmbed/mbed-os/issues/7129), the include path might exceed the maximum Windows command line string length. Using `.mbedignore` decreases the length of the include path but makes these features unavailable: 
+    >* Certificate Enrollment
+    >* Device Sentry
+    >* Secure Device Access
+    >* Factory flow using FCU
 
 1. In Windows, Mac and other case-insensitive file systems, apply a patch that resolves an issue with conflicting file names by running:
 
@@ -182,7 +199,7 @@ For more information about the initial provisioning process, please see ["Provis
 
 1. Configure the target:
 
-    Mbed OS supports two target configurations for this board. The default is `CY8CKIT_064B0S2_4343W`. For this tutorial, we will use `CYTFM_064B0S2_4343W` which enables support for Trusted Firmwware-M (TF-M) secure services.
+    Mbed OS supports two target configurations for this board. The default is `CY8CKIT_064B0S2_4343W`. For this tutorial, we will use `CYTFM_064B0S2_4343W` which enables support for Trusted Firmware-M (TF-M) secure services.
 
     1. In Mbed Studio, next to the Target box, select the down arrow. Then click the chip icon, to open the 'Manage Custom Targets' menu.
 
@@ -198,7 +215,7 @@ For more information about the initial provisioning process, please see ["Provis
 
     ![compile](../img/compile.gif "Compile")
 
-    Upon success, the output should something like:
+    Upon success, the output should look like the following:
 
     ```
     020-09-16 15:41:57,783 : C : INFO  : Image for slot BOOT signed successfully! (BUILD/CYTFM_064B0S2_4343W/ARMC6\tfm_s.hex)
@@ -239,7 +256,7 @@ For more information about the initial provisioning process, please see ["Provis
     ```
 
   **Notes:**
-  1. Depending on your system, building can take 2 minutes (best case) to 20 minutes (worst case).
+  1. Depending on your system, the building can take 2 minutes (best case) to 20 minutes (worst case).
 
   1. The following error can be ignored.
 
@@ -262,7 +279,7 @@ For more information about the initial provisioning process, please see ["Provis
 
 1. Enroll the device to your Pelion account:
 
-    The first time the application successfully boots up and connects to the network, it will print it's enrollment ID on the Serial Monitor.
+    The first time the application successfully boots up and connects to the network, it will print its enrollment ID on the Serial Monitor.
 
     ![enrollment](../img/enrollment.png "Enrollment ID") 
 
@@ -323,6 +340,15 @@ We currently support updating the example application in the CM4 core.
     - `<new firmware version>` is a 64-bit unsigned integer, where 32 MSBs represent the major version and 32 LSBs represent the minor. For example, version 1.0 is represented as `4294967296` and version 1.1 as `4294967297`.
     - `<device ID>` is the ID of the device to be updated.
 
+    When executing this command, the manifest tool:
+
+    * Uploads the update image to the Device Management update service.
+    * Creates and signs a manifest file with the digest of the update image and its Device Management URL.
+    * Uploads that manifest to the Device Management update service.
+    * Creates an update campaign using the manifest and a default device filter matching the device ID.
+    * Starts the update campaign.
+    * Waits for the update campaign to finish.
+    
     You can validate that the device is using the upgraded firmware in the serial monitor printout:
 
     ```
@@ -330,3 +356,7 @@ We currently support updating the example application in the CM4 core.
     ```
 
     ![update program](../img/update.gif "Update Program")
+
+    You can check the status of the update campaign created by the manifest-tool by selecting it in the portal and opening its details pane. It should be marked as successful: 
+
+    ![build program](../img/update-campaigns.png "Build Program")
