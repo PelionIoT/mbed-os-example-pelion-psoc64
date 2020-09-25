@@ -193,6 +193,9 @@ For more information about the initial provisioning process, please see ["Provis
         ```
         manifest-dev-tool init --force -a [access key from Device Management Portal]
         ```
+        
+        ![manifest-dev-tool-init](./img/manifest-dev-tool-init.gif "Manifest")
+
         For information about access keys and how you can create one, please refer to our [documentation](https://www.pelion.com/docs/device-management/latest/user-account/application-access-keys.html).
 
         ![access-keys](./img/access-key.gif "Access Keys")
@@ -340,6 +343,8 @@ We currently support updating the example application in the CM4 core.
     - `<new firmware version>` is a 64-bit unsigned integer, where 32 MSBs represent the major version and 32 LSBs represent the minor. For example, version 1.0 is represented as `4294967296` and version 1.1 as `4294967297`.
     - `<device ID>` is the ID of the device to be updated.
 
+    ![starting-update-campaign](./img/starting_update_campaign.gif "Manifest")
+
     When executing this command, the manifest tool:
 
     * Uploads the update image to the Device Management update service.
@@ -356,6 +361,7 @@ We currently support updating the example application in the CM4 core.
     ```
 
     ![update program](./img/update.gif "Update Program")
+
 
     You can check the status of the update campaign created by the manifest-tool by selecting it in the portal and opening its details pane. It should be marked as successful: 
 
