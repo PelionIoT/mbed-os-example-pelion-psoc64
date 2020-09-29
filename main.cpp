@@ -259,7 +259,8 @@ int main(void)
     }
 
     // POST resource 3201/0/5850
-    m2m_post_res = M2MInterfaceFactory::create_resource(m2m_obj_list, 3201, 0, 5850, M2MResourceInstance::INTEGER, M2MBase::POST_ALLOWED);
+    m2m_post_res = M2MInterfaceFactory::create_resource(m2m_obj_list, 3201, 0, 5850, M2MResourceInstance::INTEGER, M2MBase::GET_POST_ALLOWED);
+
     if (m2m_post_res->set_execute_function(execute_post) != true) {
         printf("m2m_post_res->set_execute_function() failed\n");
         return -1;
