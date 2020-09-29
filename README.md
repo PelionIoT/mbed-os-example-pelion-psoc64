@@ -262,12 +262,12 @@ For more information about the initial provisioning process, please see the ["Pr
     Image: BUILD/CYTFM_064B0S2_4343W/ARMC6\mbed-os-example-pelion-armdevsummit.hex
     ```
 
-  > **Notes:**
-  * Depending on your system, the building can take two minutes (best case) to 20 minutes (worst case).
-  * Ignore this error:
-      ```
-      Configuration error: Bootloader not supported on this target. RAM start not found in targets.json.
-      ```
+    > **Notes:**
+    * Depending on your system, the building can take two minutes (best case) to 20 minutes (worst case).
+    * Ignore this error:
+        ```
+        Configuration error: Bootloader not supported on this target. RAM start not found in targets.json.
+        ```
 
 1. Click the run icon (<img src="img/run.png" height="25">) to flash and run the application:
 
