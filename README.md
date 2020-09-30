@@ -30,7 +30,9 @@ This document guides you through all of the steps required to run Device Managem
 
 ## Installing Cypress tools
 
-1. From the Mbed Studio menu bar, select **Terminal** > **New Terminal** to open a terminal.
+1. From the **Mbed Studio** menu bar, select **Terminal** > **New Terminal** to open a terminal.
+
+**Important Note** Due to a known issue with the Mbed Studio terminal feature, if you close and re-open Mbed Studio, you need to close the terminal tab and re-open it. Otherwise the terminal's path environment variable may be corrupted. 
 
 1. Install CySecureTools:
 
@@ -360,3 +362,48 @@ We currently support updating the example application in the CM4 core.
     You can check the status of the update campaign by selecting it in the portal and opening its details pane. It should be marked as successful:
 
     ![view-update-campaign-details](./img/update-campaigns.png "View Update Campaign Details")
+
+
+## Troubleshooting Tips
+
+- If the Python commands fail to run
+    - Ensure that you are calling commands from within a **Mbed Studio** terminal.
+    - If you close Mbed Studio, close and re-open the terminal within Mbed Studio. This resets it to a known good state.
+    - To check that the terminal environment is set correctly, type `which python` (Mac or Linux) or `where python` on windows. The path to the correct version of Python should be within _Mbed Studio_ files.  
+
+- If the provisioning tools fail to connect 
+    - Ensure that the USB cable is plugged into the KitProg3 USB (left side of board)
+    - Check that the KitProg3 status LED is blinking (for DAPLink mode)
+    - If you are on Windows, ensure that the correct version of _libusb_ is installed
+    - See [Secure Boot SDK User Guide](https://www.cypress.com/file/480976/download) for more tips on correct installation
+
+- If the provisioning process fails 
+    - Ensure that jumper J26 is off for the first-time provisioning, then back on for provisioning thereafter. 
+    - If the provisioning process fails before completion, you may encounter problems when trying it again. If this occurs, try adding the **--erase-boot** option to the _cysecurtools_ command. 
+
+- If the application fails to build in Mbed Studio
+    - Double check that the build target CYTFM_064B0S2_4343W is set correctly. 
+    - Make sure that you **do not** update the libaries.
+    - Ensure there are no formatting errors in mbed_app.json
+    
+- If the device fails to connect to the Pelion service
+    - Double check that you have added your WiFi credentials correctly
+    - Make sure that you have uploaded the correct root CA certificate (.pem file) to the Pelion console. If not correct, the device can appear to have a network error.
+    - Problems can occur if you run `manifest-dev-tool init` within a project multiple times, which causes the update certificate to change. If this occurs, follow these steps. 
+    1. Flash the device with the new image with _new_ update certificate
+    1. Then run pyocd command to erase the internal storage, `pyocd erase -s 0x101C0000-0x101C9000`.  
+    1. Reset the board. THe new update certificate will be saved.
+
+- You missed getting the enrollemnt ID from the device
+    - If you accidentally press `c` in the serial monitor before copying the enrollment ID, run the command `pyocd erase -s 0x101C0000-0x101C9000` to start over.
+    - If you have trouble copying the enrollment ID from the serial monitor, please note that there is a known issue in Mbed Studio in which highlighted text is not visibly noticable. However, if you select the text and copy it, you should be able to paste it.
+
+- If the firmware update campaign fails to start
+    - If a campaign is launched when there is an existing campaign ongoing that targets the same device(s), then the new campaign can get stuck in "daft" mode. 
+    - To stop an ongoing campaign, go to the Pelion device management portal, select Firmware update > Update campaigns, click the active campaign, then click **Stop**.
+
+- If the device does not start downloading the update
+    - Ensure that the firmware version is set correctly in the correct section of **cytfm_pelion_policy.json**.
+    - Ensure that the firmware version is newer than the version that is currently running on the board. 
+    - Make sure to convert the update hex file to binary and point the manifest-dev-tool to the correct file. 
+    - Ensure the Device ID and Access Key are correct and coorespond to the device that is enrolled to the same account that your access key comes from.
