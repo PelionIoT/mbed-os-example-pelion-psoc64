@@ -24,7 +24,13 @@ This document guides you through all of the steps required to run Device Managem
 
 ## Importing the example in Mbed Studio
 
-[Import](https://os.mbed.com/docs/mbed-studio/current/create-import/index.html#importing-a-program-from-a-url) the code repository to Mbed Studio:
+From the **Mbed Studio** menu bar, select **File** > **Import Program...** and on the `URL` textbox enter the path to this repository:
+    
+```
+https://github.com/ARMmbed/mbed-os-example-pelion-armdevsummit
+```
+
+Leave the rest of the dialog options as is and click **Add Program**. The checkout takes some time since it downloads and initalizes both Mbed OS and the dependant  libraries, so be patient! 
 
 ![mbed-studio-import](./img/mbed-studio-import.png "Cypress Pioneer Kit")
 
@@ -32,7 +38,7 @@ This document guides you through all of the steps required to run Device Managem
 
 1. From the **Mbed Studio** menu bar, select **Terminal** > **New Terminal** to open a terminal.
 
-**Important Note** Due to a known issue with the Mbed Studio terminal feature, if you close and re-open Mbed Studio, you need to close the terminal tab and re-open it. Otherwise the terminal's path environment variable may be corrupted. 
+   > **Important Note** Due to a known issue with the Mbed Studio terminal feature, if you close and re-open Mbed Studio, you need to close the terminal tab and re-open it. Otherwise the terminal's path environment variable may be corrupted. 
 
 1. Install CySecureTools:
 
@@ -62,8 +68,14 @@ You need to carry out this step only once on each board to be able to re-provisi
 
 1. Unplug your device from the power supply.
 1. Remove the jumper shunt from J26.
+
+    ![jumper-j26](./img/jumper-j26.png "Jumper j26")
+
 1. Plug-in power.
-1. Press the Mode button until the LED is always on to put the device in DAPLink mode.
+1. Press the ‘Mode’ button on the kit until the KitProg3 Status LED blinks fast:
+
+    ![daplink-mode](./img/daplink-mode.gif "DAPLink Mode")
+
 1. To provision the board with basic configuration, run:
 
     ```
@@ -127,7 +139,7 @@ For more information about the initial provisioning process, please see the ["Pr
 
     ![certificate-upload](./img/certificate.gif "Certificate Upload")
 
-1. Set up your project workspace for CySecureTools and create keys based on the [`cytfm_pelion_policy.json`](https://github.com/cvasilak/mbed-os-example-pelion-armdevsummit/blob/armdevsummit/TARGET_CYTFM_064B0S2_4343W/policy/cytfm_pelion_policy.json) policy:
+1. Set up your project workspace for CySecureTools and create keys based on the [`cytfm_pelion_policy.json`](https://github.com/ARMmbed/mbed-os-example-pelion-armdevsummit/blob/armdevsummit/TARGET_CYTFM_064B0S2_4343W/policy/cytfm_pelion_policy.json) policy:
 
     ```
     cysecuretools -t cy8ckit-064b0s2-4343w init
@@ -137,10 +149,12 @@ For more information about the initial provisioning process, please see the ["Pr
     > **Note:** You use these keys to sign future application images and the device uses the keys to verify the application images. Therefore, if you lose the keys, you need to re-provision the board with new keys.
 
 1. Provision the device with your root CA, app keys and device certificate:
+
+    > **Note:** Make sure to replace `'<device's unique serial number>'` with your own serial number. An example serial number that can be used is `111222333444555`
+
     ```
     python ../mbed-os/targets/TARGET_Cypress/TARGET_PSOC6/TARGET_CYTFM_064B0S2_4343W/reprov_helper.py -d cy8ckit-064b0s2-4343w -p policy/cytfm_pelion_policy.json -existing-keys --serial <device's unique serial number> -y
     ```
-    Give your device any serial number that you like.
 
     ![provision-step2](./img/provisioning-step2.gif "Provision")
 
@@ -158,7 +172,7 @@ For more information about the initial provisioning process, please see the ["Pr
     rename .mbedignore-for-win .mbedignore
     ```
 
-    > Due to [mbed-os issue 7129](https://github.com/ARMmbed/mbed-os/issues/7129), the include path might exceed the maximum Windows command line string length. Using `.mbedignore` decreases the length of the include path but makes these features unavailable:
+    > **Note:** Due to [mbed-os issue 7129](https://github.com/ARMmbed/mbed-os/issues/7129), the include path might exceed the maximum Windows command line string length. Using `.mbedignore` decreases the length of the include path but makes these features unavailable:
     >* Certificate enrollment.
     >* Device Sentry.
     >* Secure device access.
@@ -168,13 +182,17 @@ For more information about the initial provisioning process, please see the ["Pr
 
     ```
     cd mbed-cloud-client
-    git am ..\mcc-fix-conflict-fname.patch
+    git am ../mcc-fix-conflict-fname.patch
+    ```
+
+    Once the patch is applied, return to the root of the project:
+    ```
     cd ..
     ```
 
 1. Add your WiFi access point information:
 
-    1. Open the file `mbed_app.json`.
+    1. Open the file `mbed_app.json` within Mbed Studio.
 
     1. Edit the lines to update the default WiFi SSID & password:
 
@@ -190,19 +208,22 @@ For more information about the initial provisioning process, please see the ["Pr
         ```
         pip install --upgrade manifest-tool
         ```
-        The Cypress update flow requires the newest version of the manifest-tool.
+        > **Note:** The Cypress update flow requires the newest version of the manifest-tool.
 
-    1. Initialize the environment:
+    1. Initialize the upgrade environment:
 
+        > **Note:** You need to pass an `Access Key` that you create in the Pelion portal. For information about access keys and how you can create one, please refer to our [documentation](https://www.pelion.com/docs/device-management/latest/user-account/application-access-keys.html).
+
+        > **Note:** Make sure after you create the `Access key` in the portal, to keep it in a safe place cause you won't be able to retrieve it again. If you lose it, you need to create a new one. 
+        
+        ![access-keys](./img/access-key.gif "Access Keys")
+
+        Once the access key is created, pass it as a parameter:
         ```
         manifest-dev-tool init --force -a [access key from Device Management Portal]
         ```
 
         ![manifest-dev-tool-init](./img/manifest-dev-tool-init.gif "Manifest")
-
-        For information about access keys and how you can create one, please see our [documentation](https://www.pelion.com/docs/device-management/latest/user-account/application-access-keys.html).
-
-        ![access-keys](./img/access-key.gif "Access Keys")
 
 1. Configure the target:
 
@@ -214,7 +235,7 @@ For more information about the initial provisioning process, please see the ["Pr
 
     1. From the **USB device** dropdown, select the connected board.
 
-    1. Enter `CYTFM_064B0S2_4343W` for in the **Target name** and **Build target** fields.
+    1. Enter `CYTFM_064B0S2_4343W` for both **Target name** and **Build target** fields.
 
     1. Click **Save All**.
 
@@ -305,7 +326,7 @@ We currently support updating the example application in the CM4 core.
 
 **To update the example application:**
 
-1. Update the firmware version in the `cytfm_pelion_policy.json` file:
+1. Update the firmware version in the [`TARGET_CYTFM_064B0S2_4343W/policy/cytfm_pelion_policy.json`](https://github.com/ARMmbed/mbed-os-example-pelion-armdevsummit/blob/armdevsummit/TARGET_CYTFM_064B0S2_4343W/policy/cytfm_pelion_policy.json) file:
 
     1. Go to `"id": 16` in the file.
 
@@ -321,7 +342,7 @@ We currently support updating the example application in the CM4 core.
 
     The manifest tool does not currently support hex files; therefore, you must convert the image to bin format.
 
-1. Convert the upgrade image from hex to bin format:
+1. Convert the upgrade image from hex to bin format. Open Mbed Studio terminal and in the root of the project enter:
 
     ```
     python inthex2bin.py BUILD/CYTFM_064B0S2_4343W/ARMC6/mbed-os-example-pelion-armdevsummit_upgrade.hex
@@ -341,7 +362,7 @@ We currently support updating the example application in the CM4 core.
     ```
     python -c "a, b = '1.0'.split('.'); print((int(a)<<32) + int(b))"
     ```
-    - `<device ID>` is the ID of the device to be updated.
+    - `<device ID>` is the ID of the device to be updated. The Device ID is printed in the console when the device boots up or is visible in the Pelion portal at the Device Directory section (column `Device ID`)
 
     ![starting-update-campaign](./img/starting_update_campaign.gif "Manifest")
 
