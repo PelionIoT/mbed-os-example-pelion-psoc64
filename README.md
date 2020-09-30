@@ -412,3 +412,4 @@ We currently support updating the example application in the CM4 core.
     - Ensure that the firmware version is newer than the version that is currently running on the board. 
     - Make sure to convert the update hex file to binary and point the manifest-dev-tool to the correct file. 
     - Ensure the Device ID and Access Key are correct and correspond to the device that is enrolled to the same account that your access key comes from.
+    - Try pressing the reset button. There is a known issue in which a reset is required to get the download to start on rare occasions.
