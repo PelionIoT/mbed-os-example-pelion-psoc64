@@ -379,10 +379,10 @@ We currently support updating the example application in the CM4 core.
 
 - If the provisioning process fails 
     - Ensure that jumper J26 is off for the first-time provisioning, then back on for provisioning thereafter. 
-    - If the provisioning process fails before completion, you may encounter problems when trying it again. If this occurs, try adding the **--erase-boot** option to the _cysecurtools_ command. 
+    - If the provisioning process fails before completion, you may encounter problems when trying it again. If this occurs, try adding the **--erase-boot** option to the _cysecuretools_ command. 
 
 - If the application fails to build in Mbed Studio
-    - Double check that the build target CYTFM_064B0S2_4343W is set correctly. 
+    - Double check that the build target **CYTFM_064B0S2_4343W** is set correctly. 
     - Make sure that you **do not** update the libaries.
     - Ensure there are no formatting errors in mbed_app.json
     
@@ -392,18 +392,19 @@ We currently support updating the example application in the CM4 core.
     - Problems can occur if you run `manifest-dev-tool init` within a project multiple times, which causes the update certificate to change. If this occurs, follow these steps. 
     1. Flash the device with the new image with _new_ update certificate
     1. Then run pyocd command to erase the internal storage, `pyocd erase -s 0x101C0000-0x101C9000`.  
-    1. Reset the board. THe new update certificate will be saved.
+    1. Reset the board. The new update certificate will be saved.
 
-- You missed getting the enrollemnt ID from the device
+- If you missed getting the enrollemnt ID from the device
     - If you accidentally press `c` in the serial monitor before copying the enrollment ID, run the command `pyocd erase -s 0x101C0000-0x101C9000` to start over.
     - If you have trouble copying the enrollment ID from the serial monitor, please note that there is a known issue in Mbed Studio in which highlighted text is not visibly noticable. However, if you select the text and copy it, you should be able to paste it.
 
 - If the firmware update campaign fails to start
-    - If a campaign is launched when there is an existing campaign ongoing that targets the same device(s), then the new campaign can get stuck in "daft" mode. 
+    - If a campaign is launched when there is an existing campaign ongoing that targets the same device(s), then the new campaign can get stuck in "draft" mode. 
     - To stop an ongoing campaign, go to the Pelion device management portal, select Firmware update > Update campaigns, click the active campaign, then click **Stop**.
 
 - If the device does not start downloading the update
-    - Ensure that the firmware version is set correctly in the correct section of **cytfm_pelion_policy.json**.
+    - Ensure that the firmware version is set correctly in the correct section of **cytfm_pelion_policy.json** in X.Y format.
+    - Confirm that the firmware version is passed to the _manifest-dev-tool_ command correctly in 64-bit unsigned format (see formula above).
     - Ensure that the firmware version is newer than the version that is currently running on the board. 
     - Make sure to convert the update hex file to binary and point the manifest-dev-tool to the correct file. 
-    - Ensure the Device ID and Access Key are correct and coorespond to the device that is enrolled to the same account that your access key comes from.
+    - Ensure the Device ID and Access Key are correct and correspond to the device that is enrolled to the same account that your access key comes from.
