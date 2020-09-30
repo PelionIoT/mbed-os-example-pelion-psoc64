@@ -336,7 +336,11 @@ We currently support updating the example application in the CM4 core.
 
     Where:
 
-    - `<new firmware version>` is a 64-bit unsigned integer, where 32 MSBs represent the major version and 32 LSBs represent the minor version. For example, version 1.0 is represented as `4294967296` and version 1.1 as `4294967297`.
+    - `<new firmware version>` is a 64-bit unsigned integer, where 32 MSBs represent the major version and 32 LSBs represent the minor version. For example, version 1.0 is represented as `4294967296` and version 1.1 as `4294967297`. You can run the following to calculate the value, replacing `1.0` with your desired version number:
+    
+    ```
+    python -c "a, b = '1.0'.split('.'); print(int(a)<<32 + int(b))"
+    ```
     - `<device ID>` is the ID of the device to be updated.
 
     ![starting-update-campaign](./img/starting_update_campaign.gif "Manifest")
