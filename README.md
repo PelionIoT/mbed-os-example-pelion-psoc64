@@ -11,6 +11,7 @@ This document guides you through all of the steps required to run Device Managem
 - [Generating and provisioning Device Management credentials](#generating-and-provisioning-device-management-credentials).
 - [Building and running the example](#building-and-running-the-example).
 - [Updating firmware](#updating-firmware).
+- [Troubleshooting](#troubleshooting-tips)
 
 ## Prerequisites
 
