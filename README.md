@@ -228,7 +228,7 @@ For more information about the initial provisioning process, please see the ["Pr
 
 1. Configure the target:
 
-    Mbed OS supports two target configurations for this board. The default is `CY8CKIT_064B0S2_4343W`. For this tutorial, we will use `CYTFM_064B0S2_4343W` which enables support for Trusted Firmware-M (TF-M) secure services.
+    Mbed OS supports two target configurations for this board. For this tutorial, we will use **CYTFM_064B0S2_4343W** which enables support for Trusted Firmware-M (TF-M) secure services. The default target that Mbed Studio recognizes for this board is _CY8CKIT_064B0S2_4343W_, so it needs to be changed.
 
     1. In Mbed Studio, click the down arrow in the **Target** box.
 
