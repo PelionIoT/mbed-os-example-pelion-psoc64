@@ -428,6 +428,7 @@ We currently support updating the example application in the CM4 core.
 - If the firmware update campaign fails to start
     - If a campaign is launched when there is an existing campaign ongoing that targets the same device(s), then the new campaign can get stuck in "draft" mode. 
     - To stop an ongoing campaign, go to the Pelion device management portal, select Firmware update > Update campaigns, click the active campaign, then click **Stop**.
+    - If the device management console reports that the manifest was rejected, you may have accidentally reinitilized the update certificate. If this is the case, erase the internal storage with the command `pyocd erase -s 0x101C0000-0x101C9000`, reset the board, and try again.
 
 - If the device does not start downloading the update
     - Ensure that the firmware version is set correctly in the correct section of **cytfm_pelion_policy.json** in X.Y format.
