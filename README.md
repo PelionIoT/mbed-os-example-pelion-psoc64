@@ -401,7 +401,7 @@ We currently support updating the example application in the CM4 core.
     - Ensure that the USB cable is plugged into the KitProg3 USB (left side of board)
     - Check that the KitProg3 status LED is blinking (for DAPLink mode)
     - If the board has already been provisioned at least once, be sure to use the _re-provision-device_ command option.
-    - If you are on Windows, ensure that the correct version of _libusb_ is installed
+    - If you are on Windows, ensure that the correct version of _libusb_ is installed and matches the 32-bit or 64-bit version of Windows you have.
     - See [Secure Boot SDK User Guide](https://www.cypress.com/file/480976/download) for more tips on correct installation
 
 - If the provisioning process fails 
