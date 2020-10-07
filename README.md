@@ -78,7 +78,9 @@ You need to carry out this step only once on each board to be able to re-provisi
     ![daplink-mode](./img/daplink-mode.gif "DAPLink Mode")
 
 1. To provision the board with basic configuration, run:
-
+   
+   _Still within mbed-os-example-pelion-armdevsummit/mbed-os/targets/TARGET_Cypress/TARGET_PSOC6/TARGET_CYTFM_064B0S2_4343W_
+    
     ```
     cysecuretools -t cy8ckit-064b0s2-4343w -p policy/policy_multi_CM0_CM4_tfm.json provision-device
     ```
@@ -102,6 +104,8 @@ For more information about the initial provisioning process, please see the ["Pr
     ```
 
 1. Create a `certificates` directory:
+
+    _Within mbed-os-example-pelion-armdevsummit/TARGET_CYTFM_064B0S2_4343W_ 
 
     ```
     mkdir certificates
@@ -141,6 +145,8 @@ For more information about the initial provisioning process, please see the ["Pr
     ![certificate-upload](./img/certificate.gif "Certificate Upload")
 
 1. Set up your project workspace for CySecureTools and create keys based on the [`cytfm_pelion_policy.json`](https://github.com/ARMmbed/mbed-os-example-pelion-armdevsummit/blob/armdevsummit/TARGET_CYTFM_064B0S2_4343W/policy/cytfm_pelion_policy.json) policy:
+
+    _Still within mbed-os-example-pelion-armdevsummit/TARGET_CYTFM_064B0S2_4343W_
 
     ```
     cysecuretools -t cy8ckit-064b0s2-4343w init
@@ -220,6 +226,9 @@ For more information about the initial provisioning process, please see the ["Pr
         ![access-keys](./img/access-key.gif "Access Keys")
 
         Once the access key is created, pass it as a parameter:
+        
+        _Within the top level project directory: mbed-os-example-pelion-armdevsummit_ 
+         
         ```
         manifest-dev-tool init --force -a [access key from Device Management Portal]
         ```
@@ -344,6 +353,8 @@ We currently support updating the example application in the CM4 core.
     The manifest tool does not currently support hex files; therefore, you must convert the image to bin format.
 
 1. Convert the upgrade image from hex to bin format. Open Mbed Studio terminal and in the root of the project enter:
+
+    _within the top level project directory: mbed-os-example-pelion-armdevsummit_
 
     ```
     python inthex2bin.py BUILD/CYTFM_064B0S2_4343W/ARMC6/mbed-os-example-pelion-armdevsummit_upgrade.hex
