@@ -4,14 +4,15 @@
 
 This document guides you through all of the steps required to run Device Management Client example on the CYTFM_064B0S2_4343W target.
 
-- [Prerequisites](#prerequisites).
-- [Importing the example in Mbed Studio](#importing-the-example-in-mbed-studio).
-- [Installing Cypress tools](#installing-cypress-tools).
+- [Prerequisites](#prerequisites)
+- [Importing the example in Mbed Studio](#importing-the-example-in-mbed-studio)
+- [Installing Cypress tools](#installing-cypress-tools)
 - [Provisioning the device with initial credentials](#provisioning-the-device-with-initial-credentials)
-- [Generating and provisioning Device Management credentials](#generating-and-provisioning-device-management-credentials).
-- [Building and running the example](#building-and-running-the-example).
-- [Updating firmware](#updating-firmware).
+- [Generating and provisioning Device Management credentials](#generating-and-provisioning-device-management-credentials)
+- [Building and running the example](#building-and-running-the-example)
+- [Updating firmware](#updating-firmware)
 - [Troubleshooting](#troubleshooting-tips)
+- [Further Information](#further-information)
 
 ## Prerequisites
 
@@ -448,3 +449,16 @@ We currently support updating the example application in the CM4 core.
     - Make sure to convert the update hex file to binary and point the manifest-dev-tool to the correct file. 
     - Ensure the Device ID and Access Key are correct and correspond to the device that is enrolled to the same account that your access key comes from.
     - Try pressing the reset button. There is a known issue in which a reset is required to get the download to start on rare occasions.
+
+## Further Information
+
+More information for PSoC® 64 and Pelion™ IoT platform can be found in the following pages:
+
+* [Cypress PSoC® 64 Secure Boot Wi-Fi BT
+Pioneer Kit Guide](https://www.cypress.com/file/502721/download#page=19&zoom=100,96,382)
+* [Cypress PSoC® 64 Secure Boot SDK User Guide](https://www.cypress.com/file/480976/download)
+* [Cypress PSoC® 64 Secure Microcontrollers Home Page](https://www.cypress.com/products/32-bit-arm-cortex-m4-cortex-m0-psoc-64-security-line)
+* [Secure Device Management with Arm® Pelion™](https://www.cypress.com/solutions/arm-iot)
+* [Arrow Electronics PSoC 64 Campaign Webpage](https://www.arrow.com/en/campaigns/cypress-psoc-64-secure-microcontrollers)
+* [Pelion IoT platform Documentation](https://www.pelion.com/docs/)
+* [Order a PSoC 64 Secure Boot Wi-Fi BT Pioneer Kit](https://www.cypress.com/documentation/development-kitsboards/psoc-64-secure-boot-wi-fi-bt-pioneer-kit-cy8ckit-064b0s2-4343w)
