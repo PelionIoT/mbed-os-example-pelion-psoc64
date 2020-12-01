@@ -1,395 +1,464 @@
-# Pelion Device Management Client example for Mbed OS
+# Running Device Management Client example on the PSoC® 64 Secure Boot Wi-Fi BT Pioneer Kit (CYTFM_064B0S2_4343W)
 
-This is a basic Device Management Client example for Mbed OS that supports:
-- The latest Mbed OS and Device Management Client releases.
-- Developer mode provisioning.
-- Firmware Update.
+![cypress-pioneer-kit](./img/cypress-pioneer-kit.png "Cypress Pioneer Kit")
 
-There is a more advanced example of the client with support for multiple operating systems in [mbed-cloud-client-example](https://github.com/ARMmbed/mbed-cloud-client-example) repository. The underlying client library is the same for both. This Mbed OS only example is simpler as it only supports one OS with a limited set of demonstrated features. If you want to do development in Linux and Mbed OS at the same time - you should use the [mbed-cloud-client-example](https://github.com/ARMmbed/mbed-cloud-client-example).
+This document guides you through all of the steps required to run Device Management Client example on the CYTFM_064B0S2_4343W target.
 
-<span class="notes">**Note:** If you want to use production provisioning modes, or use more advanced client features, those are demonstrated via [mbed-cloud-client-example](https://github.com/ARMmbed/mbed-cloud-client-example).</span>
+- [Prerequisites](#prerequisites)
+- [Importing the example in Mbed Studio](#importing-the-example-in-mbed-studio)
+- [Installing Cypress tools](#installing-cypress-tools)
+- [Provisioning the device with initial credentials](#provisioning-the-device-with-initial-credentials)
+- [Generating and provisioning Device Management credentials](#generating-and-provisioning-device-management-credentials)
+- [Building and running the example](#building-and-running-the-example)
+- [Updating firmware](#updating-firmware)
+- [Troubleshooting](#troubleshooting-tips)
+- [Further Information](#further-information)
 
-## Supported boards
+## Prerequisites
 
-This table shows a list of boards that are supported.
+- [Arm Mbed Studio](https://os.mbed.com/studio/) for building and flashing the application.
+- Install the `libusb` dependency for pyOCD based on the [Cypress documentation](https://www.cypress.com/file/502721/download#page=19&zoom=100,96,382).
 
-Board                               |  Connectivity     | Storage for credentials and FW candidate | Notes
-------------------------------------| ------------------| ------------------------| --------------
-Cypress `CYTFM_064B0S2_4343W`       | Wi-Fi             | Internal flash for credentials + external flash for FW candidate | To use `mbed-os-example-pelion` with the `CYTFM_064B0S2_4343W` board, check out the `cytfm-064b0s2-4343w` branch and see [*Running PDMC example on the CYTFM_064B0S2_4343W*](../cytfm-064b0s2-4343w/TARGET_CYTFM_064B0S2_4343W/README.md).
-Cypress `CY8CPROTO-062-4343W`       | Wi-Fi             | QSPIF                   | Build-only
-Embedded Planet `EP_AGORA`          | Cellular          | SPIF                    | Build-only
-Nuvoton `NUMAKER_IOT_M263A`         | Wi-Fi ESP8266     | SD card (NUSD)          | Build-only
-Nuvoton `NUMAKER_IOT_M487`          | Wi-Fi ESP8266     | SD card (NUSD)          | Build-only
-Nuvoton `NUMAKER_PFM_M487`          | Ethernet          | SD card (NUSD)          | Build-only
-Nuvoton `NUMAKER_PFM_NUC472`        | Ethernet          | SD card (NUSD)          | Build-only
-NXP `K64F`                          | Ethernet          | Internal Flash          |
-NXP `K66F`                          | Ethernet          | Internal Flash          |
-Renesas `GR_LYCHEE`                 | Wi-Fi ESP32       | External Flash ([See security limitation of this board](https://os.mbed.com/platforms/Renesas-GR-LYCHEE/#security-limitation-of-this-platform)) | Build-only
-Renesas `RZ_A1H`                    | Ethernet          | External Flash ([See security limitation of this board](https://os.mbed.com/platforms/Renesas-GR-PEACH/#security-limitation-of-this-platform)) | Build-only
-Seeed `ARCH_MAX`                    | Ethernet          | SD card                 | Build-only
-Seeed `WIO_3G`                      | Cellular          | Internal Flash          | Build-only
-Seeed `WIO_BG96`                    | Cellular          | Internal Flash          | Build-only
-ST `DISCO_L475VG_IOT01A`            | Wi-Fi             | QSPIF                   | Build-only
-ST `DISCO_L496AG`                   | Cellular          | QSPIF                   | Build-only
-ST `NUCLEO_F411RE`                  | Wi-Fi ESP8266     | SD card                 | Build-only
-ST `NUCLEO_F429ZI`                  | Ethernet          | Internal Flash          | Build-only
-ST `NUCLEO_F767ZI`                  | Ethernet          | Internal Flash          | Build-only
-ST `NUCLEO_H743ZI2`                 | Ethernet          | Internal Flash          | Build-only
-ST `NUCLEO_L4R5ZI`                  | Wi-Fi ESP8266     | Internal Flash          | Build-only
-ST `DISCO_F746NG `                  | Ethernet          | QSPIF                   | Build-only
-Ublox `UBLOX_C030_R412M`            | Cellular          | SD card                 | Build-only
-Ublox `UBLOX_C030_U201`             | Cellular          | SD card                 | Build-only
-Ublox `UBLOX_EVK_ODIN_W2`           | Wi-Fi             | SD card                 | Build-only
-Uhuru `UHURU_RAVEN`                 | Wi-Fi ESP32       | Internal Flash          | Build-only
+    **Note:** Due to a known issue, Cypress recommends using [`libusb` version 1.0.21](https://github.com/libusb/libusb/releases/tag/v1.0.21) on Windows instead of the most recent version.
+- OpenSSL toolkit (only if you do not have your own root CA private key and certificate and need to generate them yourself).
+     - For Windows, use the [SLP distribution](https://slproweb.com/products/Win32OpenSSL.html) and set the `PATH` environment variable to point to the installation.
 
-Build-only = This target is currently verified only via compilation, and is not verified at runtime.
 
-# Developer guide
+## Importing the example in Mbed Studio
 
-This section is intended for developers to get started, import the example application, compile and get it running on their device.
-
-## Requirements
-
-- Mbed CLI >= 1.10.0
-
-  For instructions on installing and using Mbed CLI, please see our [documentation](https://os.mbed.com/docs/mbed-os/latest/tools/developing-mbed-cli.html).
-
-- Install the `CLOUD_SDK_API_KEY`
-
-   `mbed config -G CLOUD_SDK_API_KEY ak_1MDE1...<snip>`
-
-   You should generate your own API key. Pelion Device Management is available for any Mbed developer. Create a [free trial](https://os.mbed.com/pelion-free-tier).
-
-   For instructions on how to generate your API key, please see our [documentation](https://cloud.mbed.com/docs/current/integrate-web-app/api-keys.html#generating-an-api-key).
-
-## Deploying
-
-This repository is in the process of being updated and depends on few enhancements being deployed in mbed-cloud-client. In the meantime, follow these steps to import and apply the patches before compiling.
-
-    ```
-    mbed import mbed-os-example-pelion
-    cd mbed-os-example-pelion
-    ```
-
-## Compiling
-
-    mbed target K64F
-    mbed toolchain GCC_ARM
-    mbed device-management init -d arm.com --model-name example-app --force -q
-    mbed compile
-
-## Program Flow
-
-1. Initialize, connect and register to Pelion DM
-1. Interact with the user through the serial port (115200 bauds)
-   - Press enter through putty/minicom to simulate button
-   - Press `i` to print endpoint name
-   - Press Ctrl-C to to unregister
-   - Press `r` to reset storage and reboot (warning: it generates a new device ID!)
-
-## Further information and requirements
-
-Check the public tutorial for further information:
-
-  [https://www.pelion.com/docs/device-management/current/connecting/mbed-os.html](https://www.pelion.com/docs/device-management/current/connecting/mbed-os.html)
-
-## Enabling logs
-
-Logging (or tracing) can be enabled by modifying the [`mbed_app.json`](https://github.com/ARMmbed/mbed-os-example-pelion/blob/master/mbed_app.json#L19) file.
-
-    ```
-            "mbed-trace.enable"                         : null,
-    ```
-By modifying that `null` to `1` and recompiling the application.
-
-Log level can be modified compile-time by defining `MBED_TRACE_MAX_LEVEL` -macro to `mbed_app.json`:
-
-   ```
-    "target.macros_add": [
-         "MBED_TRACE_MAX_LEVEL=TRACE_LEVEL_INFO",
-   ```
-
-Default level is `TRACE_LEVEL_DEBUG`, possible values are:
-* `TRACE_LEVEL_DEBUG` (largest amounts of logs)
-* `TRACE_LEVEL_INFO`
-* `TRACE_LEVEL_WARN` and
-* `TRACE_LEVEL_ERROR` (smallest amount of logs).
-
-Component level run-time control is also possible by setting log levels (by calling `mbed_trace_config_set()`) and inclusions/exclusions (by calling `mbed_trace_include_filters_set()` or mbed_trace_exclude_filters_set()`).
-
-For more details, see the [`mbed-trace`](https://github.com/ARMmbed/mbed-trace) library.
-
-## Troubleshooting
-
-- Device initializes but can't register to Pelion
-
-  Error: `client_error(3) -> Bootstrap server URL is not correctly formed`
-
-  Solution: Format the the storage by pressing 'r' in the serial terminal.
-
-# Porting process to add support for an Mbed Enabled board
-
-  There are many steps involved in this process. We generally recomend the following steps:
-
-  1. Configure the application using `mbed_app.json`
-      - Configure the default connectivity
-      - Configure the KVSTORE area to store credentials (internal or external memory)
-      - Build the application, program the board and observe whether the application can connect to Pelion DM by using a serial terminal.
-  1. Configure the bootloader using `bootloader_app.json`
-      - Configure the KVSTORE area
-      - Configure the FW Candidate Storage
-      - Build bootloader application, program the board and observe whether this is able to boot.
-  1. Enable application with bootloader using `mbed_app.json`
-      - Enable the usage of the bootloader
-      - Ensure the KVSTORE addresses and FW Candidate storage addresses match with the bootloader configuration
-      - Build the application again (this time combined with bootloader) and check whether it can boot and connect to Pelion DM.
-      - Perform a FW Update and check whether the process can be completed succesfully.
-
-## 1. Application configuration
-
-<span class="notes">**Note**: consider allocating the credentials on internal flash to simplify the application setup process. In addition, consider the use of internal flash to store the firmware candidate image for the FW update process as this would remove the need to use external components. If there isn't enough space, you may need to enable external storage (SD Card, SPI, etc).</span>
-
-Mbed OS boards should have a default configuration for connectivity and storage in Mbed OS (`targets.json`).
-You can extend or override the default configuration using `mbed_app.json` in this application. Create a new entry under the target name for your device.
-
-### a. Connectivity
-
-  Specify the default IP connectivity type for your target. It's essential with targets that lack default connectivity set in `targets.json` or for targets that support multiple connectivity options. For example:
-
-      "target.network-default-interface-type" : "ETHERNET",
-
-  The possible options are `ETHERNET`, `WIFI` and `CELLULAR`.
-
-  Depending on connectivity type, you might have to specify more configuration options. Review the [documentation](https://os.mbed.com/docs/mbed-os/latest/porting/porting-connectivity.html) for further information.
-
-### b. Storage for credentials
-
-  Start by getting familiar with the multiple [storage options](https://os.mbed.com/docs/mbed-os/latest/reference/storage.html) and configurations supported in Mbed OS.
-
-  Then start designing the system memory map, the location of components (whether they are on internal or external memory), and the corresponding base addresses and sizes. You may want to create a diagram similar to the one below to help you to make design decisions:
-
-    +--------------------------+
-    |                          |
-    |                          |
-    |                          |
-    |Firmware Candidate Storage|
-    |                          |
-    |                          |
-    |                          |
-    +--------------------------+ <-+ update-client.storage-address
-    |                          |
-    |         KVSTORE          |
-    |                          |
-    +--------------------------+ <-+ storage_tdb_internal.internal_base_address
-    |                          |
-    |        Free space        |
-    |                          |
-    +--------------------------+
-    |                          |
-    |                          |
-    |        Active App        |
-    |                          |
-    |                          |
-    |                          |
-    +--------------------------+ <-+ mbed-bootloader.application-start-address
-    |Active App Metadata Header|
-    +--------------------------+ <-+ update-client.application-details
-    |                          |
-    |        Bootloader        |
-    |                          |
-    +--------------------------+ <-+ 0
-
-  In cases where the MCU has two separate memory banks, it's appropiate to allocate the bootloader and base application in one bank, and KVSTORE storage at the begining of the second bank followed by a firmware candidate storage.
-
-  - **Option 1:** Allocating credentials in internal memory
-
-    **This is the preferred option whenever possible**. Make sure `TDB_INTERNAL` is the type of storage selected in `mbed_app.json`. Specify the base address depending on the available memory in the system. The size of this section should be aligned with the flash erase sector. The value should be multiple of 4 with a minimum of 24KB and upwards depending on the use case (for example the usage of certificate chain will increase the need of storage to hold those certificates). An example of this configuration can be seen for the `NUCLEO_F429ZI` board in this application.
-
-        "storage.storage_type"                      : "TDB_INTERNAL"
-        "storage_tdb_internal.internal_base_address": "(MBED_ROM_START+1024*1024)",
-        "storage_tdb_internal.internal_size"        : "(128*1024)",
-
-  - **Option 2:** Allocating credentials in external memory:
-
-    This is possible when the board has an storage device wired to the MCU (could be on-board or external component). Make sure `FILESYSTEM` is specified as type of storage. The blockdevice and filesystem should be one of the supported in Mbed OS (see [docs](https://os.mbed.com/docs/mbed-os/latest/porting/blockdevice-port.html)).
-
-    An example of this configuration can be seen for the `K64F` board in the [mbed-cloud-client-example](https://github.com/ARMmbed/mbed-cloud-client-example/blob/master/mbed_app.json#L32)
-
-        "storage.storage_type"                      : "FILESYSTEM",
-        "storage_filesystem.blockdevice"            : "SD",
-        "storage_filesystem.filesystem"             : "LITTLE",
-        "storage_filesystem.internal_base_address"  : "(32*1024)",
-        "storage_filesystem.rbp_internal_size"      : "(8*1024)",
-        "storage_filesystem.external_base_address"  : "(0x0)",
-        "storage_filesystem.external_size"          : "(1024*1024*64)",
-
-### c. Storage for firmware updates
-
-  Before enabling FW updates, it's recomended that the application is able to initialize the network and connect to Pelion DM.
-
-  Once the connection is successfull, you can follow the steps below to enable the board to receive FW updates. Note the configuration for the application in this section should match with the one on  the bootloader - see section below.
-
-  - Common configuration
-
-    Regardless of where the firmware candidate is located (internal or external), there is a need to have a bootloader in place. The binary of the booloader can be specified with the `bootloader_img` option. The address and size of the bootloader determines the `application-details` and `bootloader-details` options. The value of `bootloader-details` can be obtained by checking for the symbol from the map file of the binary. Example python code for obtaining the location:
-    ```python
-    with open("BUILD/UBLOX_EVK_ODIN_W2/GCC_ARM/mbed-bootloader.map", 'r') as fd:
-        s = fd.read()
-
-    regex = r"\.rodata\..*{}\s+(0x[0-9a-fA-F]+)".format("bootloader")
-    match = re.search(regex, s, re.MULTILINE)
-    offset = int(match.groups()[0], 16)
-    print hex(offset)
-    ```
-
-    Review the [mbed-bootloader](https://github.com/ARMmbed/mbed-bootloader#configurations) guidelines on how these options should be selected. Review the [bootloader configuration](2.-Bootloader-configuration) section below for more information.
-
-    Copy the compiled bootloader from `mbed-bootloader/BUILDS/<TARGET>/<TOOLCHAIN>-TINY/mbed-bootloader.bin` to `bootloader/mbed-bootloader-<TARGET>.bin`.
-
-    Edit `mbed-os-pelion-example/mbed_app.json` and modify the target configuration to match with the one in `bootloader_app.json`.
-
-   <span class="notes">**Note:**
-
-  - `update-client.application-details` should be identical in both `bootloader_app.json` and `mbed_app.json`.
-
-  - `target.app_offset` is relative offset to `flash-start-address` you specified in `mbed_app.json` and `bootloader_app.json`, and is the hex value of the offset specified by `application-start-address` in `bootloader_app.json`. For example,  `(MBED_CONF_APP_FLASH_START_ADDRESS+65*1024)` dec equals `0x10400` hex.
-
-  - `target.header_offset` is also relative offset to the `flash-start-address` you specified in the `bootloader_app.json`, and is the hex value of the offset specified by `update-client.application-details`. For example, `(MBED_CONF_APP_FLASH_START_ADDRESS+64*1024)` dec equals `0x10000` hex.</span>
-
-  An example of this configuration can be seen for the `NUCLEO_F429ZI` board.
-
-        "update-client.application-details"         : "(MBED_ROM_START + MBED_BOOTLOADER_SIZE)",
-        "update-client.bootloader-details"          : "0x08007300",
-        "target.bootloader_img"                     : "bootloader/mbed-bootloader-<target>",
-        "target.header_offset"                      : "0x8000",
-        "target.app_offset"                         : "0x8400",
-
-  - **Option 1:** Allocating the firmware update candidate in internal memory
-
-    **This is the preferred option whenever possible**. Make sure `ARM_UCP_FLASHIAP` is selected in `update-storage` in `mbed_app.json`. This area should be located at the end of the flash after the KVSTORE area. Specify the `storage-address`, `storage-size` and `storage-page` as required. The `application-details` option should point at the end of the bootloader area. An example of this configuration can be seen for the `NUCLEO_F429ZI` board.
-
-        "mbed-cloud-client.update-storage"          : "ARM_UCP_FLASHIAP",
-        "update-client.storage-address"             : "(MBED_CONF_STORAGE_TDB_INTERNAL_INTERNAL_BASE_ADDRESS+MBED_CONF_STORAGE_TDB_INTERNAL_INTERNAL_SIZE)",
-        "update-client.storage-size"                : "(1024*1024-MBED_CONF_STORAGE_TDB_INTERNAL_INTERNAL_SIZE)",
-        "update-client.storage-page"                : 1,
-
-  - **Option 2:** Allocating the firmware update candidate in external memory
-
-  When using an external device to the MCU to store the firmware candidate, make sure `ARM_UCP_FLASHIAP_BLOCKDEVICE` is specified as type of `update-storage`. Specify the `storage-address`, `storage-size` and `storage-page` as required.
-
-  An example of this configuration can be seen for the `K64F` board in the [mbed-cloud-client-example](https://github.com/ARMmbed/mbed-cloud-client-example/blob/master/mbed_app.json#L32)
-
-        "mbed-cloud-client.update-storage"          : "ARM_UCP_FLASHIAP_BLOCKDEVICE",
-        "update-client.storage-address"             : "(1024*1024*64)",
-        "update-client.storage-size"                : "((MBED_ROM_START + MBED_ROM_SIZE - APPLICATION_ADDR) * MBED_CONF_UPDATE_CLIENT_STORAGE_LOCATIONS)",
-
-## 2. Bootloader configuration
-
-The bootloader is required to perform FW Updates. The steps below explain how to create a new configuration and binary for the bootloader.
-
-1. Import as a new application the [mbed-bootloader](https://github.com/ARMmbed/mbed-bootloader/) repository.
-
-1. Edit the bootloader application configuration in this example (`bootloader/bootloader_app.json`) and add a new target entry. An example of this configuration can be seen for the `NUCLEO_F429ZI` board:
-
-
-       "update-client.firmware-header-version"    : "2",
-       "mbed-bootloader.use-kvstore-rot"          : 0,
-       "mbed-bootloader.bootloader-size"          : "APPLICATION_SIZE",
-       "update-client.application-details"        : "(MBED_ROM_START + MBED_BOOTLOADER_SIZE)",
-       "mbed-bootloader.application-start-address": "(MBED_CONF_UPDATE_CLIENT_APPLICATION_DETAILS + MBED_BOOTLOADER_ACTIVE_HEADER_REGION_SIZE)",
-       "mbed-bootloader.max-application-size"     : "(MBED_ROM_START + MBED_BOOTLOADER_FLASH_BANK_SIZE - MBED_CONF_MBED_BOOTLOADER_APPLICATION_START_ADDRESS)",
-       "update-client.storage-address"            : "(MBED_ROM_START + MBED_BOOTLOADER_FLASH_BANK_SIZE + KVSTORE_SIZE)",
-       "update-client.storage-size"               : "(MBED_BOOTLOADER_FLASH_BANK_SIZE - KVSTORE_SIZE)",
-       "update-client.storage-locations"          : 1,
-       "kvstore-size"                             : "2*64*1024",
-       "update-client.storage-page"               : 1
-
-1. Compile the bootloader using the `bootloader_app.json` configuration you've just edited:
-
-    `mbed compile -t <TOOLCHAIN> -m <TARGET> --profile=tiny.json --app-config=.../mbed-os-pelion-example/bootloader/bootloader_app.json>`
-
-<span class="notes">**Note:** `mbed-bootloader` is primarily optimized for `GCC_ARM`, so you may want to compile it with that toolchain.
-Before jumping to the next step, you should compile and flash the bootloader and then connect over the virtual serial port to ensure the bootloader is running correctly. You can ignore errors related to checksum verification or failure to jump to application - these are expected at this stage.</span>
-
-## Validation and testing for the board configuration
-
-The board needs to pass the underlying Mbed OS tests and be supported by official Mbed OS release.
-
-- Mbed OS tests (as described in our [documentation](https://os.mbed.com/docs/mbed-os/latest/porting/testing.html))
+From the **Mbed Studio** menu bar, select **File** > **Import Program...** and on the `URL` textbox enter the path to this repository:
 
 ```
-  cd mbed-os
-  mbed test -m <target> -t <toolchain>
+https://github.com/PelionIoT/mbed-os-pelion-example-psoc64
 ```
 
-- Mbed OS integration tests
+Leave the rest of the dialog options as is and click **Add Program**. The checkout takes some time since it downloads and initalizes both Mbed OS and the dependant  libraries, so be patient!
 
-  See [mbed-os/TESTS/integration/README.md](https://github.com/ARMmbed/mbed-os/blob/sip-workshop/TESTS/integration/README.md) (sip-workshop branch)
+![mbed-studio-import](./img/mbed-studio-import.png "Cypress Pioneer Kit")
 
-```
-  cd mbed-os
-  mbed test -t <toolchain> -m <board> -n *integration-* -DINTEGRATION_TESTS -v
-```
+## Installing Cypress tools
 
-## Validation and testing for the client configuration
+1. From the **Mbed Studio** menu bar, select **Terminal** > **New Terminal** to open a terminal.
 
-Basic pelion features are required to work:
-- Connects to Pelion in developer mode.
-- Firmware can be updated.
-- Responsive to REST API commands.
+   > **Important Note** Due to a known issue with the Mbed Studio terminal feature, if you close and re-open Mbed Studio, you need to close the terminal tab and re-open it. Otherwise the terminal's path environment variable may be corrupted.
 
-This should be verified by executing the Pelion E2E python test library tests.
+1. Install CySecureTools:
 
-- Install the prerequisites listed in the README of the [pelion-e2e-python-test-library](https://github.com/ARMmbed/pelion-e2e-python-test-library).
-- Configure your API-key as instructed in the same README.
-- Basic tests can be then executed as:
+    ```
+    pip install cysecuretools
+    ```
 
-    `pytest TESTS/pelion-e2e-python-test-library/tests/dev-client-tests.py --update_bin=/home/user/mbed-os-example-pelion/mbed-os-example-pelion_update.bin`
+## Provisioning the device with initial credentials
 
-## Contributing platform support
+You need to carry out this step only once on each board to be able to re-provision later with your root CA and device certificate.
 
-The contribution of platform support to this repository is restricted to Arm Mbed Partners and Arm Engineering teams. If you’d like to add a custom or community-based platform, please fork this repository and add it into your own account.
-Expectations on contributions:
+1. In the Mbed Studio terminal, set up your project workspace for CySecureTools and create keys for provisioning:
 
--	No code changes in `main.cpp`.
-This is a minimal and generic application that’s expected to work on out of the box with all platforms listed in the documentation and [Pelion Quick-start](https://os.mbed.com/guides/connect-device-to-pelion/) guide.
+    ```
+    cd ./mbed-os-pelion-example-psoc64/mbed-os/targets/TARGET_Cypress/TARGET_PSOC6/TARGET_CYTFM_064B0S2_4343W
+    ```
 
-- No changes to the hash of `mbed-os.lib ` or `mbed-cloud-client.lib` files.
-The Mbed OS release used in this repository should be update-to-date but you can raise an issue to be updated by the maintainers.
+    ```
+    cysecuretools -t cy8ckit-064b0s2-4343w init
+    ```
 
--	No extra files or `.mbedignore` with removal of Mbed OS code.
-You may need to fix issues and send a PR to [Mbed OS](https://github.com/ARMmbed/mbed-os) first.
+    ```
+    cysecuretools -t cy8ckit-064b0s2-4343w -p policy/policy_multi_CM0_CM4_tfm.json create-keys
+    ```
 
--	Configuration (required)
-     - `mbed_app.json` to add components or features. Please follow the guidelines in the porting section of the docs.
+    You will be prompted to overwrite existing files. Type `y` to continue.
 
--	Drivers (optional)
-     -	If required, drivers for networking or storage (non-default) can be added in the `drivers` folder using an external library (.lib). For example  `COMPONENT_MYDRIVER.lib` and enabling in `mbed_app.json`.
+1. Unplug your device from the power supply.
+1. Remove the jumper shunt from J26.
 
--	Bootloader (required)
-     -	The configuration should be provided in either [mbed-bootloader](https://github.com/ARMmbed/mbed-bootloader) repository (as default configuration) or [bootloader](https://github.com/ARMmbed/mbed-os-example-pelion/tree/master/bootloader) folder in this repository (if non-default). Our recommendation is to contribute to the mbed-bootloader repository whenever possible. Please indicate where the bootloader configuration lives.
-     -	Binaries should be generated and contributed following the name conventions in the bootloader folder.
+    ![jumper-j26](./img/jumper-j26.png "Jumper j26")
 
--	Indication of platform support
-     -	Please update `README.md` file and add an entry to the list of supported boards.
+1. Plug-in power.
+1. Press the ‘Mode’ button on the kit until the KitProg3 Status LED blinks fast:
 
--	Test results and other information
-     -	Attach test logs for required toolchains as documented [here](https://os.mbed.com/docs/mbed-os/latest/tools/index.html)
-           - Greentea (Mbed OS tests, including integration tests).
-           - Pelion E2E tests based on pytest.
-     -	Mbed OS and Mbed-cloud-client version used during the tests.
-        Note contributions will be accepted only against versions available in the example at that time.
+    ![daplink-mode](./img/daplink-mode.gif "DAPLink Mode")
 
--	Pull-requests are raised against the master branch. The Arm team makes releases regularly.
+1. To provision the board with basic configuration, run:
 
--	Pelion-Ready. Indicate if a board is expected to be marked as Pelion-Ready and therefore be added to the Pelion Quick-start.
+   _Still within mbed-os-pelion-example-psoc64/mbed-os/targets/TARGET_Cypress/TARGET_PSOC6/TARGET_CYTFM_064B0S2_4343W_
 
-- You agree that the configuration changes contributed are considered open source and Apache 2.0 licensed.
+    ```
+    cysecuretools -t cy8ckit-064b0s2-4343w -p policy/policy_multi_CM0_CM4_tfm.json provision-device
+    ```
 
--	Support of the platform is provided by Silicon Partners or Platform vendors for Mbed Enabled platforms. If using a non-default configuration, then Arm is responsible for its support.
+    ![provisioning](./img/provisioning.gif "Provisioning")
 
-Note platforms will be tested regularly in the Arm CI system. Please discuss with your Arm contact and make hardware available as indicated in the Mbed Enabled requirements.
+1. Unplug your device from the power supply.
+1. Put back the jumper shunt in J26.
+1. Plug-in power.
 
-# Known-issues
+    **Note:** You don't need the keys and other files that are created in this flow in the future. At this point, you can delete these files.
 
-Please review existing issues on [GitHub](https://github.com/ARMmbed/mbed-os-example-pelion/issues) and report any problem you may see.
+For more information about the initial provisioning process, please see the ["Provision the Device" section of the CY8CKIT-064B0S2-4343W PSoC 64 Secure Boot Wi-Fi BT Pioneer Kit Guide](https://www.cypress.com/file/502721/download#page=30&zoom=100,96,382).
+
+## Generating and provisioning Device Management credentials
+
+1. Navigate to the root of the project and enter the `TARGET_CYTFM_064B0S2_4343W` directory:
+
+    ```
+    cd mbed-os-pelion-example-psoc64/TARGET_CYTFM_064B0S2_4343W
+    ```
+
+1. Create a `certificates` directory:
+
+    _Within mbed-os-pelion-example-psoc64/TARGET_CYTFM_064B0S2_4343W_
+
+    ```
+    mkdir certificates
+    ```
+
+1. Name your own root CA private key and certificate `rootCA.key` and `rootCA.pem` respectively, and place them in the `certificates/` directory.
+
+    Alternatively, if you don't have a root CA, you can generate a root CA private key and certificate using the [OpenSSL toolkit](https://www.openssl.org/):
+
+    ```
+    openssl ecparam -out certificates/rootCA.key -name prime256v1 -genkey
+    ```
+
+    Create a new configuration file called `root.cnf` and place it in the `certificates/` directory. The file is passed as input to the `openssl` tool in the next step, to create the final certificate.
+    The contents of the file should be the following:
+
+    ```
+    [ req ]
+    distinguished_name=dn
+    prompt = no
+    [ ext ]
+    basicConstraints = CA:TRUE
+    keyUsage = digitalSignature, keyCertSign, cRLSign
+    [ dn ]
+    CN = ROOT_CA
+    ```
+
+    Finally, create the certificate:
+    ```
+    openssl req -key certificates/rootCA.key -new -x509 -days 7300 -sha256 -out certificates/rootCA.pem -config certificates/root.cnf -extensions ext
+    ```
+
+1. Upload the root CA certificate generated from the previous step to the portal. Refer to the [Pelion Documentation](https://www.pelion.com/docs/device-management/latest/provisioning-process/managing-ca-certificates.html#uploading-a-ca-certificate-or-certificate-chain) for instructions on how to accomplish this.
+
+    **Important:** When you upload your root CA certificate to Device Management Portal, you must select **Enrollment - I received this certificate from the device manufacturer or a supplier** from the **How will devices use this certificate?** dropdown.
+
+    ![certificate-upload](./img/certificate.gif "Certificate Upload")
+
+1. Set up your project workspace for CySecureTools and create keys based on the [`cytfm_pelion_policy.json`](https://github.com/ARMmbed/mbed-os-pelion-example-psoc64/blob/armdevsummit/TARGET_CYTFM_064B0S2_4343W/policy/cytfm_pelion_policy.json) policy:
+
+    _Still within mbed-os-pelion-example-psoc64/TARGET_CYTFM_064B0S2_4343W_
+
+    ```
+    cysecuretools -t cy8ckit-064b0s2-4343w init
+    cysecuretools -t cy8ckit-064b0s2-4343w -p policy/cytfm_pelion_policy.json create-keys
+    ```
+
+    > **Note:** You use these keys to sign future application images and the device uses the keys to verify the application images. Therefore, if you lose the keys, you need to re-provision the board with new keys.
+
+1. Provision the device with your root CA, app keys and device certificate:
+
+    > **Note:** Make sure to replace `'<device's unique serial number>'` with your own serial number. An example serial number that can be used is `111222333444555`
+
+    ```
+    python ../mbed-os/targets/TARGET_Cypress/TARGET_PSOC6/TARGET_CYTFM_064B0S2_4343W/reprov_helper.py -d cy8ckit-064b0s2-4343w -p policy/cytfm_pelion_policy.json -existing-keys --serial <device's unique serial number> -y
+    ```
+
+    ![provision-step2](./img/provisioning-step2.gif "Provision")
+
+## Building and running the example
+
+1. Navigate back to the root of the project:
+
+    ```
+    cd ..
+    ```
+
+1. In Windows only, rename `.mbedignore-for-win` to `.mbedignore`:
+
+    ```
+    rename .mbedignore-for-win .mbedignore
+    ```
+
+    > **Note:** Due to [mbed-os issue 7129](https://github.com/ARMmbed/mbed-os/issues/7129), the include path might exceed the maximum Windows command line string length. Using `.mbedignore` decreases the length of the include path but makes these features unavailable:
+    >* Certificate enrollment.
+    >* Device Sentry.
+    >* Secure device access.
+    >* Factory flow using FCU.
+
+1. In Windows, Mac and other case-insensitive file systems, apply a patch that resolves an issue with conflicting file names by running:
+
+    ```
+    cd mbed-cloud-client
+    git am ../mcc-fix-conflict-fname.patch
+    ```
+
+    Once the patch is applied, return to the root of the project:
+    ```
+    cd ..
+    ```
+
+1. Add your WiFi access point information:
+
+    1. Open the file `mbed_app.json` within Mbed Studio.
+
+    1. Edit the lines to update the default WiFi SSID & password:
+
+    ```
+    "nsapi.default-wifi-ssid"                   : "\"SSID\"",
+    "nsapi.default-wifi-password"               : "\"PASSWORD\"",
+    ```
+
+1. To enable firmware update:
+
+    1. Install manifest-tool v2.0 or higher:
+
+        ```
+        pip install --upgrade manifest-tool
+        ```
+        > **Note:** The Cypress update flow requires the newest version of the manifest-tool.
+
+    1. Initialize the upgrade environment:
+
+        > **Note:** You need to pass an `Access Key` that you create in the Pelion portal. For information about access keys and how you can create one, please refer to our [documentation](https://www.pelion.com/docs/device-management/latest/user-account/application-access-keys.html).
+
+        > **Note:** Make sure after you create the `Access key` in the portal, to keep it in a safe place cause you won't be able to retrieve it again. If you lose it, you need to create a new one.
+
+        ![access-keys](./img/access-key.gif "Access Keys")
+
+        Once the access key is created, pass it as a parameter:
+
+        _Within the top level project directory: mbed-os-pelion-example-psoc64_
+
+        ```
+        manifest-dev-tool init --force -a [access key from Device Management Portal]
+        ```
+
+        ![manifest-dev-tool-init](./img/manifest-dev-tool-init.gif "Manifest")
+
+1. Configure the target:
+
+    Mbed OS supports two target configurations for this board. For this tutorial, we will use **CYTFM_064B0S2_4343W** which enables support for Trusted Firmware-M (TF-M) secure services. The default target that Mbed Studio recognizes for this board is _CY8CKIT_064B0S2_4343W_, so it needs to be changed.
+
+    1. In Mbed Studio, click the down arrow in the **Target** box.
+
+    1. Click the chip icon to open the **Manage Custom Targets** menu.
+
+    1. From the **USB device** dropdown, select the connected board.
+
+    1. Enter `CYTFM_064B0S2_4343W` for both **Target name** and **Build target** fields.
+
+    1. Click **Save All**.
+
+    ![select target](./img/target-selection.gif "Select Target")
+
+1. Click the hammer icon (<img src="img/hammer.png" height="30">) to build the application:
+
+    ![compile](./img/compile.gif "Compile")
+
+    Upon success, the output looks like this:
+
+    ```
+    020-09-16 15:41:57,783 : C : INFO  : Image for slot BOOT signed successfully! (BUILD/CYTFM_064B0S2_4343W/ARMC6\tfm_s.hex)
+    2020-09-16 15:41:58,168 : C : INFO  : Image for slot UPGRADE signed successfully! (BUILD/CYTFM_064B0S2_4343W/ARMC6\tfm_s_upgrade.hex)
+    2020-09-16 15:42:00,372 : C : INFO  : Image for slot BOOT signed successfully! (BUILD/CYTFM_064B0S2_4343W/ARMC6\mbed-os-pelion-example-psoc64.hex)
+    2020-09-16 15:42:01,813 : C : INFO  : Image for slot UPGRADE signed successfully! (BUILD/CYTFM_064B0S2_4343W/ARMC6\mbed-os-pelion-example-psoc64_upgrade.hex)
+    | Module                                        |      .text |    .data |       .bss |
+    |-----------------------------------------------|------------|----------|------------|
+    | TARGET_CYTFM_064B0S2_4343W\cy_factory_flow.o  |   2113(+0) |    0(+0) |   2000(+0) |
+    | [lib]\c_w.l                                   |  13006(+0) |   16(+0) |    392(+0) |
+    | [lib]\fz_wm.l                                 |   1888(+0) |    0(+0) |      0(+0) |
+    | [lib]\libcpp_w.l                              |      5(+0) |    0(+0) |      0(+0) |
+    | [lib]\libcppabi_w.l                           |     44(+0) |    0(+0) |      0(+0) |
+    | [lib]\m_wm.l                                  |    754(+0) |    0(+0) |      0(+0) |
+    | anon$$obj.o                                   |     48(+0) |    0(+0) |   5120(+0) |
+    | main.o                                        |   3059(+0) |    0(+0) |    369(+0) |
+    | mbed-cloud-client\device-sentry-client        |    166(+0) |    0(+0) |      0(+0) |
+    | mbed-cloud-client\factory-configurator-client |  11190(+0) |    2(+0) |     83(+0) |
+    | mbed-cloud-client\mbed-client                 |  67037(+0) |   22(+0) |     12(+0) |
+    | mbed-cloud-client\mbed-client-pal             |  14254(+0) |    1(+0) |     79(+0) |
+    | mbed-cloud-client\source                      |  10166(+0) |    5(+0) |     24(+0) |
+    | mbed-cloud-client\update-client-hub           |  28753(+0) |  146(+0) |   5178(+0) |
+    | mbed-os\connectivity                          | 165477(+0) |  200(+0) | 105681(+0) |
+    | mbed-os\drivers                               |   6614(+0) |    0(+0) |     84(+0) |
+    | mbed-os\events                                |   2138(+0) |    0(+0) |   4672(+0) |
+    | mbed-os\features                              |   6470(+0) |    1(+0) |    228(+0) |
+    | mbed-os\hal                                   |   3580(+0) |    8(+0) |    248(+0) |
+    | mbed-os\platform                              |  10393(+0) |   80(+0) |   1420(+0) |
+    | mbed-os\rtos                                  |  16028(+0) |  168(+0) |   7897(+0) |
+    | mbed-os\storage                               |   5873(+0) |    0(+0) |    548(+0) |
+    | mbed-os\targets                               | 508073(+0) |  533(+0) |   3817(+0) |
+    | update_default_resources.o                    |    432(+0) |    0(+0) |      0(+0) |
+    | Subtotals                                     | 877561(+0) | 1182(+0) | 137852(+0) |
+    Total Static RAM memory (data + bss): 139034(+0) bytes
+    Total Flash memory (text + data): 878743(+0) bytes
+    Update Image: BUILD/CYTFM_064B0S2_4343W/ARMC6\mbed-os-pelion-example-psoc64_update.bin
+    Image: BUILD/CYTFM_064B0S2_4343W/ARMC6\mbed-os-pelion-example-psoc64.hex
+    ```
+
+    > **Notes:**
+    * Depending on your system, the building can take two minutes (best case) to 20 minutes (worst case).
+    * Ignore this error:
+        ```
+        Configuration error: Bootloader not supported on this target. RAM start not found in targets.json.
+        ```
+
+1. Click the run icon (<img src="img/run.png" height="25">) to flash and run the application:
+
+    Alternatively, you can flash the application directly:
+    1. Drag and drop the hex output file (`BUILD/CYTFM_064B0S2_4343W/ARMC6/mbed-os-pelion-example-psoc64.hex`) to the mounted drive for the board.
+    1. Reset the board.
+
+1. Open the serial monitor (click **View** > **Serial Monitor** in Mbed Studio) and choose baud rate `115200`.
+
+1. Enroll the device to your Pelion account:
+
+    The first time the application successfully boots up and connects to the network, it prints its enrollment ID on the serial monitor.
+
+    ![enrollment](./img/enrollment.png "Enrollment ID")
+
+    1. Copy the enrollment ID from the terminal output.
+    1. Upload the enrollment ID to Device Management:
+        1. In Device Management Portal, click **Device directory** > **Enrolling devices**.
+        1. Click the **+ Enroll devices** button.
+        1. Enter the enrollment ID in the **Device enrollment key** field.
+        1. Click **Add single device**.
+    1. Go back to the terminal, press **C** to continue, and check that the device connects to Device Management.
+
+    ![enrollment](./img/enroll.gif "Enrollment ID")
+
+> **Note:** For development purposes, you can reset the Device Management credentials by running `pyocd erase -s 0x101C0000-0x101C9000`.
+
+## Updating firmware
+
+The `CYTFM_064B0S2_4343W` target board has two cores - CM0 for the T-FM firmware, CM4 for the example application.
+
+We currently support updating the example application in the CM4 core.
+
+**To update the example application:**
+
+1. Update the firmware version in the [`TARGET_CYTFM_064B0S2_4343W/policy/cytfm_pelion_policy.json`](https://github.com/ARMmbed/mbed-os-pelion-example-psoc64/blob/armdevsummit/TARGET_CYTFM_064B0S2_4343W/policy/cytfm_pelion_policy.json) file:
+
+    1. Go to `"id": 16` in the file.
+
+       This section of the file holds the CM4 core configuration.
+
+    1. Update `"version": "<new firmware version>",`.
+
+        Where `<new firmware version>` is a string in MSB.LSB (Most Significant Byte/Least Significant Byte) format.
+
+1. Click the hammer icon (<img src="img/hammer.png" height="30">) to build the upgraded signed image:
+
+    This creates a `./BUILD/CYTFM_064B0S2_4343W/ARMC6/mbed-os-pelion-example-psoc64_upgrade.hex` file.
+
+    The manifest tool does not currently support hex files; therefore, you must convert the image to bin format.
+
+1. Convert the upgrade image from hex to bin format. Open Mbed Studio terminal and in the root of the project enter:
+
+    _within the top level project directory: mbed-os-pelion-example-psoc64_
+
+    ```
+    python inthex2bin.py BUILD/CYTFM_064B0S2_4343W/ARMC6/mbed-os-pelion-example-psoc64_upgrade.hex
+    ```
+    This creates the `./BUILD/CYTFM_064B0S2_4343W/ARMC6/mbed-os-pelion-example-psoc64_upgrade.bin` file.
+
+1. Perform the update:
+
+    ```
+    manifest-dev-tool update-v1 --payload-path BUILD/CYTFM_064B0S2_4343W/ARMC6/mbed-os-pelion-example-psoc64_upgrade.bin --fw-version <new firmware version> --device-id <device ID> --start-campaign --wait-for-completion --no-cleanup --timeout 3600
+    ```
+
+    Where:
+
+    - `<new firmware version>` is a 64-bit unsigned integer, where 32 MSBs represent the major version and 32 LSBs represent the minor version. For example, version 1.0 is represented as `4294967296` and version 1.1 as `4294967297`. You can run the following to calculate the value, replacing `1.0` with your desired version number:
+
+    ```
+    python -c "a, b = '1.0'.split('.'); print((int(a)<<32) + int(b))"
+    ```
+    - `<device ID>` is the ID of the device to be updated. The Device ID is printed in the console when the device boots up or is visible in the Pelion portal at the Device Directory section (column `Device ID`)
+
+    ![starting-update-campaign](./img/starting_update_campaign.gif "Manifest")
+
+    When executing this command, the manifest tool:
+
+    * Uploads the update image to the Device Management update service.
+    * Creates and signs a manifest file with the digest of the update image and its Device Management URL.
+    * Uploads that manifest to the Device Management update service.
+    * Creates an update campaign using the manifest and a default device filter matching the device ID.
+    * Starts the update campaign.
+    * Waits for the update campaign to finish.
+
+    You can validate that the device is using the upgraded firmware in the serial monitor printout:
+
+    ```
+    Current FW image version: <new firmware version>
+    ```
+
+    ![update program](./img/update.gif "Update Program")
+
+
+    You can check the status of the update campaign by selecting it in the portal and opening its details pane. It should be marked as successful:
+
+    ![view-update-campaign-details](./img/update-campaigns.png "View Update Campaign Details")
+
+
+## Troubleshooting Tips
+
+- If the Python commands fail to run
+    - Ensure that you are calling commands from within a **Mbed Studio** terminal.
+    - If you close Mbed Studio, close and re-open the terminal within Mbed Studio. This resets it to a known good state.
+    - To check that the terminal environment is set correctly, type `which python` (Mac or Linux) or `where python` on windows. The path to the correct version of Python should be within _Mbed Studio_ files.
+
+- If the provisioning tools fail to connect
+    - Ensure that the USB cable is plugged into the KitProg3 USB (left side of board)
+    - Check that the KitProg3 status LED is blinking (for DAPLink mode)
+    - If the board has already been provisioned at least once, be sure to use the _re-provision-device_ command option.
+    - If you are on Windows, ensure that the correct version of _libusb_ is installed and matches the 32-bit or 64-bit version of Windows you have.
+    - See [Secure Boot SDK User Guide](https://www.cypress.com/file/480976/download) for more tips on correct installation
+
+- If the provisioning process fails
+    - Ensure that jumper J26 is off for the first-time provisioning, then back on for provisioning thereafter.
+    - If the provisioning process fails before completion, you may encounter problems when trying it again. If this occurs, try adding the **--erase-boot** option to the _cysecuretools_ command.
+
+- If the application fails to build in Mbed Studio
+    - Double check that the build target **CYTFM_064B0S2_4343W** is set correctly.
+    - Make sure that you **do not** update the libaries.
+    - Ensure there are no formatting errors in mbed_app.json
+
+- If the device fails to connect to the Pelion service
+    - Double check that you have added your WiFi credentials correctly
+    - Make sure that you have uploaded the correct root CA certificate (.pem file) to the Pelion console. If not correct, the device can appear to have a network error.
+    - Problems can occur if you run `manifest-dev-tool init` within a project multiple times, which causes the update certificate to change. If this occurs, follow these steps.
+    1. Flash the device with the new image with _new_ update certificate
+    1. Then run pyocd command to erase the internal storage, `pyocd erase -s 0x101C0000-0x101C9000`.
+    1. Reset the board. The new update certificate will be saved.
+
+- If you missed getting the enrollemnt ID from the device
+    - If you accidentally press `c` in the serial monitor before copying the enrollment ID, run the command `pyocd erase -s 0x101C0000-0x101C9000` to start over.
+    - If you have trouble copying the enrollment ID from the serial monitor, please note that there is a known issue in Mbed Studio in which highlighted text is not visibly noticable. However, if you select the text and copy it, you should be able to paste it.
+
+- If the firmware update campaign fails to start
+    - If a campaign is launched when there is an existing campaign ongoing that targets the same device(s), then the new campaign can get stuck in "draft" mode.
+    - To stop an ongoing campaign, go to the Pelion device management portal, select Firmware update > Update campaigns, click the active campaign, then click **Stop**.
+    - If the device management console reports that the manifest was rejected, you may have accidentally reinitilized the update certificate. If this is the case, erase the internal storage with the command `pyocd erase -s 0x101C0000-0x101C9000`, reset the board, and try again.
+
+- If the device does not start downloading the update
+    - Ensure that the firmware version is set correctly in the correct section of **cytfm_pelion_policy.json** in X.Y format.
+    - Confirm that the firmware version is passed to the _manifest-dev-tool_ command correctly in 64-bit unsigned format (see formula above).
+    - Ensure that the firmware version is newer than the version that is currently running on the board.
+    - Make sure to convert the update hex file to binary and point the manifest-dev-tool to the correct file.
+    - Ensure the Device ID and Access Key are correct and correspond to the device that is enrolled to the same account that your access key comes from.
+    - Try pressing the reset button. There is a known issue in which a reset is required to get the download to start on rare occasions.
+
+## Further Information
+
+More information for PSoC® 64 and Pelion™ IoT platform can be found in the following pages:
+
+* [Cypress PSoC® 64 Secure Boot Wi-Fi BT
+Pioneer Kit Guide](https://www.cypress.com/file/502721/download#page=19&zoom=100,96,382)
+* [Cypress PSoC® 64 Secure Boot SDK User Guide](https://www.cypress.com/file/480976/download)
+* [Cypress PSoC® 64 Secure Microcontrollers Home Page](https://www.cypress.com/products/32-bit-arm-cortex-m4-cortex-m0-psoc-64-security-line)
+* [Secure Device Management with Arm® Pelion™](https://www.cypress.com/solutions/arm-iot)
+* [Arrow Electronics PSoC 64 Campaign Webpage](https://www.arrow.com/en/campaigns/cypress-psoc-64-secure-microcontrollers)
+* [Pelion IoT platform Documentation](https://www.pelion.com/docs/)
+* [Order a PSoC 64 Secure Boot Wi-Fi BT Pioneer Kit](https://www.cypress.com/documentation/development-kitsboards/psoc-64-secure-boot-wi-fi-bt-pioneer-kit-cy8ckit-064b0s2-4343w)

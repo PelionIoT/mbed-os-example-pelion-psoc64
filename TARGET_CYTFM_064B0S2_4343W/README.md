@@ -1,0 +1,1 @@
+Please use the main [README.md](../README.md) for information on how to get started!

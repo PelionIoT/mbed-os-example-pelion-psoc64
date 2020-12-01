@@ -26,6 +26,10 @@
 #include "kv_config.h"
 #include "mbed-trace/mbed_trace.h"             // Required for mbed_trace_*
 
+#if defined(ENABLE_CY_FACTORY_FLOW)
+    extern "C" fcc_status_e cy_factory_flow(void);
+#endif
+
 // Pointers to the resources that will be created in main_application().
 static MbedCloudClient *cloud_client;
 static bool cloud_client_running = true;
@@ -158,8 +162,10 @@ int main(void)
         return -1;
     }
 
-    // Mount default kvstore
     printf("Application ready\n");
+
+#if !defined(ENABLE_CY_FACTORY_FLOW)
+    // Mount default kvstore
     status = kv_init_storage_config();
     if (status != MBED_SUCCESS) {
         printf("kv_init_storage_config() - failed, status %d\n", status);
@@ -171,6 +177,8 @@ int main(void)
     DeviceKey &devkey = DeviceKey::get_instance();
     devkey.generate_root_of_trust();
 #endif
+
+#endif // !ENABLE_CY_FACTORY_FLOW
 
     // Connect with NetworkInterface
     printf("Connect to network\n");
@@ -191,21 +199,29 @@ int main(void)
     }
     printf("Network initialized, connected with IP %s\n\n", sa.get_ip_address());
 
-    // Run developer flow
-    printf("Start developer flow\n");
     status = fcc_init();
     if (status != FCC_STATUS_SUCCESS) {
         printf("fcc_init() failed with %d\n", status);
         return -1;
     }
 
+#if !defined(ENABLE_CY_FACTORY_FLOW)
     // Inject hardcoded entropy for the device. Suitable only for demo devices.
     (void) fcc_entropy_set(MBED_CLOUD_DEV_ENTROPY, sizeof(MBED_CLOUD_DEV_ENTROPY));
+    // Run developer flow
+    printf("Start developer flow\n");
     status = fcc_developer_flow();
     if (status != FCC_STATUS_SUCCESS && status != FCC_STATUS_KCM_FILE_EXIST_ERROR && status != FCC_STATUS_CA_ERROR) {
         printf("fcc_developer_flow() failed with %d\n", status);
         return -1;
     }
+#else
+    status = cy_factory_flow();
+    if (status != FCC_STATUS_SUCCESS && status != FCC_STATUS_KCM_FILE_EXIST_ERROR) {
+        printf("cy_factory_flow() failed with %d\n", status);
+        return -1;
+    }
+#endif // ENABLE_CY_FACTORY_FLOW
 
 #ifdef MBED_CLOUD_CLIENT_SUPPORT_UPDATE
     cloud_client = new MbedCloudClient(client_registered, client_unregistered, client_error, NULL, update_progress);
@@ -243,7 +259,8 @@ int main(void)
     }
 
     // POST resource 3201/0/5850
-    m2m_post_res = M2MInterfaceFactory::create_resource(m2m_obj_list, 3201, 0, 5850, M2MResourceInstance::INTEGER, M2MBase::POST_ALLOWED);
+    m2m_post_res = M2MInterfaceFactory::create_resource(m2m_obj_list, 3201, 0, 5850, M2MResourceInstance::INTEGER, M2MBase::GET_POST_ALLOWED);
+
     if (m2m_post_res->set_execute_function(execute_post) != true) {
         printf("m2m_post_res->set_execute_function() failed\n");
         return -1;
@@ -285,10 +302,20 @@ int main(void)
             print_client_ids(); // When 'i' is pressed, print endpoint info
             continue;
         } else if (in_char == 'r') {
-            (void) fcc_storage_delete(); // When 'r' is pressed, erase storage and reboot the board.
-            printf("Storage erased, rebooting the device.\n\n");
-            ThisThread::sleep_for(1*1000);
-            NVIC_SystemReset();
+            printf("You are about to erase storage and reboot the board. Are you sure (Y/n)?\n");
+            in_char = getchar();
+            if (in_char == 'Y' || in_char == 'y') {
+                fcc_status_e fcc_status = fcc_storage_delete(); // When 'r' is pressed, erase storage and reboot the board.
+                if (fcc_status == FCC_STATUS_SUCCESS) {
+                    printf("Storage erased, rebooting the device.\n\n");
+                }
+                else {
+                    printf("WARN: Failed to erase storage, rebooting the device.\n\n");
+                }
+                ThisThread::sleep_for(1*1000);
+                NVIC_SystemReset();
+            }
+            continue;
         } else if (in_char > 0 && in_char != 0x03) { // Ctrl+C is 0x03 in Mbed OS and Linux returns negative number
             value_increment(); // Simulate button press
             continue;

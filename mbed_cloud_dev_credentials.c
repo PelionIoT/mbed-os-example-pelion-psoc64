@@ -19,7 +19,11 @@
 #ifndef __MBED_CLOUD_DEV_CREDENTIALS_H__
 #define __MBED_CLOUD_DEV_CREDENTIALS_H__
 
+#if !defined(ENABLE_CY_FACTORY_FLOW)
+
 #error "Replace mbed_cloud_dev_credentials.c with your own developer cert."
+
+#endif // !ENABLE_CY_FACTORY_FLOW
 
 #include <inttypes.h>
 
