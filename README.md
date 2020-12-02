@@ -29,7 +29,7 @@ This document guides you through all of the steps required to run Device Managem
 From the **Mbed Studio** menu bar, select **File** > **Import Program...** and on the `URL` textbox enter the path to this repository:
 
 ```
-https://github.com/PelionIoT/mbed-os-pelion-example-psoc64
+https://github.com/PelionIoT/mbed-os-example-pelion-psoc64
 ```
 
 Leave the rest of the dialog options as is and click **Add Program**. The checkout takes some time since it downloads and initalizes both Mbed OS and the dependant  libraries, so be patient!
@@ -55,7 +55,7 @@ You need to carry out this step only once on each board to be able to re-provisi
 1. In the Mbed Studio terminal, set up your project workspace for CySecureTools and create keys for provisioning:
 
     ```
-    cd ./mbed-os-pelion-example-psoc64/mbed-os/targets/TARGET_Cypress/TARGET_PSOC6/TARGET_CYTFM_064B0S2_4343W
+    cd ./mbed-os-example-pelion-psoc64/mbed-os/targets/TARGET_Cypress/TARGET_PSOC6/TARGET_CYTFM_064B0S2_4343W
     ```
 
     ```
@@ -80,7 +80,7 @@ You need to carry out this step only once on each board to be able to re-provisi
 
 1. To provision the board with basic configuration, run:
 
-   _Still within mbed-os-pelion-example-psoc64/mbed-os/targets/TARGET_Cypress/TARGET_PSOC6/TARGET_CYTFM_064B0S2_4343W_
+   _Still within mbed-os-example-pelion-psoc64/mbed-os/targets/TARGET_Cypress/TARGET_PSOC6/TARGET_CYTFM_064B0S2_4343W_
 
     ```
     cysecuretools -t cy8ckit-064b0s2-4343w -p policy/policy_multi_CM0_CM4_tfm.json provision-device
@@ -101,12 +101,12 @@ For more information about the initial provisioning process, please see the ["Pr
 1. Navigate to the root of the project and enter the `TARGET_CYTFM_064B0S2_4343W` directory:
 
     ```
-    cd mbed-os-pelion-example-psoc64/TARGET_CYTFM_064B0S2_4343W
+    cd mbed-os-example-pelion-psoc64/TARGET_CYTFM_064B0S2_4343W
     ```
 
 1. Create a `certificates` directory:
 
-    _Within mbed-os-pelion-example-psoc64/TARGET_CYTFM_064B0S2_4343W_
+    _Within mbed-os-example-pelion-psoc64/TARGET_CYTFM_064B0S2_4343W_
 
     ```
     mkdir certificates
@@ -145,9 +145,9 @@ For more information about the initial provisioning process, please see the ["Pr
 
     ![certificate-upload](./img/certificate.gif "Certificate Upload")
 
-1. Set up your project workspace for CySecureTools and create keys based on the [`cytfm_pelion_policy.json`](https://github.com/ARMmbed/mbed-os-pelion-example-psoc64/blob/armdevsummit/TARGET_CYTFM_064B0S2_4343W/policy/cytfm_pelion_policy.json) policy:
+1. Set up your project workspace for CySecureTools and create keys based on the [`cytfm_pelion_policy.json`](https://github.com/ARMmbed/mbed-os-example-pelion-psoc64/blob/armdevsummit/TARGET_CYTFM_064B0S2_4343W/policy/cytfm_pelion_policy.json) policy:
 
-    _Still within mbed-os-pelion-example-psoc64/TARGET_CYTFM_064B0S2_4343W_
+    _Still within mbed-os-example-pelion-psoc64/TARGET_CYTFM_064B0S2_4343W_
 
     ```
     cysecuretools -t cy8ckit-064b0s2-4343w init
@@ -228,7 +228,7 @@ For more information about the initial provisioning process, please see the ["Pr
 
         Once the access key is created, pass it as a parameter:
 
-        _Within the top level project directory: mbed-os-pelion-example-psoc64_
+        _Within the top level project directory: mbed-os-example-pelion-psoc64_
 
         ```
         manifest-dev-tool init --force -a [access key from Device Management Portal]
@@ -261,8 +261,8 @@ For more information about the initial provisioning process, please see the ["Pr
     ```
     020-09-16 15:41:57,783 : C : INFO  : Image for slot BOOT signed successfully! (BUILD/CYTFM_064B0S2_4343W/ARMC6\tfm_s.hex)
     2020-09-16 15:41:58,168 : C : INFO  : Image for slot UPGRADE signed successfully! (BUILD/CYTFM_064B0S2_4343W/ARMC6\tfm_s_upgrade.hex)
-    2020-09-16 15:42:00,372 : C : INFO  : Image for slot BOOT signed successfully! (BUILD/CYTFM_064B0S2_4343W/ARMC6\mbed-os-pelion-example-psoc64.hex)
-    2020-09-16 15:42:01,813 : C : INFO  : Image for slot UPGRADE signed successfully! (BUILD/CYTFM_064B0S2_4343W/ARMC6\mbed-os-pelion-example-psoc64_upgrade.hex)
+    2020-09-16 15:42:00,372 : C : INFO  : Image for slot BOOT signed successfully! (BUILD/CYTFM_064B0S2_4343W/ARMC6\mbed-os-example-pelion-psoc64.hex)
+    2020-09-16 15:42:01,813 : C : INFO  : Image for slot UPGRADE signed successfully! (BUILD/CYTFM_064B0S2_4343W/ARMC6\mbed-os-example-pelion-psoc64_upgrade.hex)
     | Module                                        |      .text |    .data |       .bss |
     |-----------------------------------------------|------------|----------|------------|
     | TARGET_CYTFM_064B0S2_4343W\cy_factory_flow.o  |   2113(+0) |    0(+0) |   2000(+0) |
@@ -292,8 +292,8 @@ For more information about the initial provisioning process, please see the ["Pr
     | Subtotals                                     | 877561(+0) | 1182(+0) | 137852(+0) |
     Total Static RAM memory (data + bss): 139034(+0) bytes
     Total Flash memory (text + data): 878743(+0) bytes
-    Update Image: BUILD/CYTFM_064B0S2_4343W/ARMC6\mbed-os-pelion-example-psoc64_update.bin
-    Image: BUILD/CYTFM_064B0S2_4343W/ARMC6\mbed-os-pelion-example-psoc64.hex
+    Update Image: BUILD/CYTFM_064B0S2_4343W/ARMC6\mbed-os-example-pelion-psoc64_update.bin
+    Image: BUILD/CYTFM_064B0S2_4343W/ARMC6\mbed-os-example-pelion-psoc64.hex
     ```
 
     > **Notes:**
@@ -306,7 +306,7 @@ For more information about the initial provisioning process, please see the ["Pr
 1. Click the run icon (<img src="img/run.png" height="25">) to flash and run the application:
 
     Alternatively, you can flash the application directly:
-    1. Drag and drop the hex output file (`BUILD/CYTFM_064B0S2_4343W/ARMC6/mbed-os-pelion-example-psoc64.hex`) to the mounted drive for the board.
+    1. Drag and drop the hex output file (`BUILD/CYTFM_064B0S2_4343W/ARMC6/mbed-os-example-pelion-psoc64.hex`) to the mounted drive for the board.
     1. Reset the board.
 
 1. Open the serial monitor (click **View** > **Serial Monitor** in Mbed Studio) and choose baud rate `115200`.
@@ -337,7 +337,7 @@ We currently support updating the example application in the CM4 core.
 
 **To update the example application:**
 
-1. Update the firmware version in the [`TARGET_CYTFM_064B0S2_4343W/policy/cytfm_pelion_policy.json`](https://github.com/ARMmbed/mbed-os-pelion-example-psoc64/blob/armdevsummit/TARGET_CYTFM_064B0S2_4343W/policy/cytfm_pelion_policy.json) file:
+1. Update the firmware version in the [`TARGET_CYTFM_064B0S2_4343W/policy/cytfm_pelion_policy.json`](https://github.com/ARMmbed/mbed-os-example-pelion-psoc64/blob/armdevsummit/TARGET_CYTFM_064B0S2_4343W/policy/cytfm_pelion_policy.json) file:
 
     1. Go to `"id": 16` in the file.
 
@@ -349,23 +349,23 @@ We currently support updating the example application in the CM4 core.
 
 1. Click the hammer icon (<img src="img/hammer.png" height="30">) to build the upgraded signed image:
 
-    This creates a `./BUILD/CYTFM_064B0S2_4343W/ARMC6/mbed-os-pelion-example-psoc64_upgrade.hex` file.
+    This creates a `./BUILD/CYTFM_064B0S2_4343W/ARMC6/mbed-os-example-pelion-psoc64_upgrade.hex` file.
 
     The manifest tool does not currently support hex files; therefore, you must convert the image to bin format.
 
 1. Convert the upgrade image from hex to bin format. Open Mbed Studio terminal and in the root of the project enter:
 
-    _within the top level project directory: mbed-os-pelion-example-psoc64_
+    _within the top level project directory: mbed-os-example-pelion-psoc64_
 
     ```
-    python inthex2bin.py BUILD/CYTFM_064B0S2_4343W/ARMC6/mbed-os-pelion-example-psoc64_upgrade.hex
+    python inthex2bin.py BUILD/CYTFM_064B0S2_4343W/ARMC6/mbed-os-example-pelion-psoc64_upgrade.hex
     ```
-    This creates the `./BUILD/CYTFM_064B0S2_4343W/ARMC6/mbed-os-pelion-example-psoc64_upgrade.bin` file.
+    This creates the `./BUILD/CYTFM_064B0S2_4343W/ARMC6/mbed-os-example-pelion-psoc64_upgrade.bin` file.
 
 1. Perform the update:
 
     ```
-    manifest-dev-tool update-v1 --payload-path BUILD/CYTFM_064B0S2_4343W/ARMC6/mbed-os-pelion-example-psoc64_upgrade.bin --fw-version <new firmware version> --device-id <device ID> --start-campaign --wait-for-completion --no-cleanup --timeout 3600
+    manifest-dev-tool update-v1 --payload-path BUILD/CYTFM_064B0S2_4343W/ARMC6/mbed-os-example-pelion-psoc64_upgrade.bin --fw-version <new firmware version> --device-id <device ID> --start-campaign --wait-for-completion --no-cleanup --timeout 3600
     ```
 
     Where:
